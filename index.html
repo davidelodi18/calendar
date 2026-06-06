@@ -444,7 +444,7 @@ function Scheduler({user}){
 
       {editing && <EventModal draft={editing} activities={activities} bus={bus} onChange={setEditing} onClose={()=>setEditing(null)} onDelete={deleteEvent}
         onSave={(d)=>{const start=combine(d.startDate,d.startTime);let end=combine(d.endDate,d.endTime);if(end<=start)end=new Date(start.getTime()+30*60000);
-          saveEvent({id:d.id,activityId:d.activityId,buId:d.buId,title:(d.title.trim()||"Senza titolo"),color:d.color,note:d.note,done:d.done,start:start.toISOString(),end:end.toISOString()});setEditing(null);}}/>}
+          saveEvent({id:d.id,activityId:d.activityId,buId:d.buId,title:(d.title.trim()||"Senza titolo"),color:d.color,note:d.note,done:d.done,inCalendar:d.inCalendar,inGantt:d.inGantt,start:start.toISOString(),end:end.toISOString()});setEditing(null);}}/>}
     </div>
   );
 }
