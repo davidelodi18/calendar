@@ -141,6 +141,26 @@
   .gp-gname{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .gp-gname.done{text-decoration:line-through;color:#A89683}
   .gp-empty{padding:50px 20px;text-align:center;color:#A89683;font-weight:600}
+  .gp-arch-month{font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:#5A4A3D;padding:14px 18px 8px}
+  .gp-arch-row{display:flex;align-items:center;gap:8px;padding:5px 16px}
+  .gp-arch-main{flex:1;display:flex;align-items:center;gap:10px;background:#FFFDF8;border:1px solid #E4D7C2;border-radius:11px;padding:11px 13px;cursor:pointer;text-align:left;font-family:inherit;transition:.15s}
+  .gp-arch-main:hover{background:#F4ECDF}
+  .gp-arch-main .pdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .gp-arch-title{flex:1;font-weight:700;font-size:14px;text-decoration:line-through;color:#7A6A5C}
+  .gp-arch-bu{font-size:10.5px;font-weight:800;color:#fff;padding:2px 8px;border-radius:20px}
+  .gp-arch-date{font-size:12px;font-weight:700;color:#A89683;white-space:nowrap}
+  .gp-radd{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .gp-radd .gp-input{flex:1;min-width:160px}
+  .gp-rdate{max-width:160px;flex:0 0 auto}
+  .gp-rlist{display:flex;flex-direction:column;gap:7px}
+  .gp-rrow{display:flex;align-items:center;gap:10px;background:#FFFDF8;border:1px solid #E4D7C2;border-radius:11px;padding:10px 13px}
+  .gp-rtext{flex:1;font-weight:700;font-size:14px;cursor:text}
+  .gp-rtext.done{text-decoration:line-through;color:#A89683}
+  .gp-rrow .gp-input{flex:1;padding:6px 10px}
+  .gp-rdue{font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;background:#EADFCB;color:#7A6A5C;white-space:nowrap}
+  .gp-rdue.late{background:#F8E9E9;color:#9E4444}
+  .gp-rdue.today{background:#FCEDE5;color:#C75D3A}
+  .gp-rsep{font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:#8A7A6D;margin:18px 0 10px}
 
   /* OVERLAY / DRAWER / MODAL */
   .gp-overlay{position:fixed;inset:0;z-index:60;background:rgba(58,46,38,.4);backdrop-filter:blur(3px);display:flex;justify-content:flex-end;animation:gp-fade .18s ease}
@@ -279,6 +299,8 @@ function Icon({name,size=18,style}){
     case "note":return <svg {...c}><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11l5-5V5a2 2 0 0 0-2-2z"/><path d="M15 21v-5a1 1 0 0 1 1-1h5"/></svg>;
     case "logout":return <svg {...c}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
     case "settings":return <svg {...c}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+    case "bell":return <svg {...c}><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>;
+    case "archive":return <svg {...c}><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>;
     default:return null;
   }
 }
@@ -318,6 +340,7 @@ function Scheduler({user}){
   const [activities,setActivities]=useState([]);
   const [events,setEvents]=useState([]);
   const [bus,setBus]=useState([]);
+  const [reminders,setReminders]=useState([]);
   const [view,setView]=useState("day");
   const [cursor,setCursor]=useState(()=>startOfDay(new Date()));
   const [ganttStart,setGanttStart]=useState(()=>startOfWeek(new Date()));
@@ -329,7 +352,8 @@ function Scheduler({user}){
     const a=db.collection("activities").where("uid","==",user.uid).onSnapshot((s)=>setActivities(s.docs.map((d)=>({id:d.id,...d.data()}))));
     const e=db.collection("events").where("uid","==",user.uid).onSnapshot((s)=>setEvents(s.docs.map((d)=>({id:d.id,...d.data()}))));
     const b=db.collection("bus").where("uid","==",user.uid).onSnapshot((s)=>setBus(s.docs.map((d)=>({id:d.id,...d.data()}))));
-    return ()=>{a();e();b();};
+    const r=db.collection("reminders").where("uid","==",user.uid).onSnapshot((s)=>setReminders(s.docs.map((d)=>({id:d.id,...d.data()}))));
+    return ()=>{a();e();b();r();};
   },[user.uid]);
 
   /* CRUD */
@@ -339,9 +363,12 @@ function Scheduler({user}){
   const removeActivity=(id)=>db.collection("activities").doc(id).delete();
   const upsertBu=async(x)=>{const p={name:x.name,color:x.color,uid:user.uid};x.id?await db.collection("bus").doc(x.id).set(p):await db.collection("bus").add(p);};
   const removeBu=(id)=>db.collection("bus").doc(id).delete();
-  const saveEvent=async(ev)=>{const p={activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,note:ev.note,done:!!ev.done,start:ev.start,end:ev.end,uid:user.uid};ev.id?await db.collection("events").doc(ev.id).set(p):await db.collection("events").add(p);};
+  const saveEvent=async(ev)=>{const p={activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,note:ev.note,done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,start:ev.start,end:ev.end,uid:user.uid};ev.id?await db.collection("events").doc(ev.id).set(p):await db.collection("events").add(p);};
   const deleteEvent=async(id)=>{await db.collection("events").doc(id).delete();setEditing(null);};
   const toggleDone=(ev)=>db.collection("events").doc(ev.id).update({done:!ev.done});
+  const addReminder=(text,due)=>db.collection("reminders").add({text,due:due||"",done:false,createdAt:Date.now(),uid:user.uid});
+  const updateReminder=(id,patch)=>db.collection("reminders").doc(id).update(patch);
+  const deleteReminder=(id)=>db.collection("reminders").doc(id).delete();
 
   const buMap=useMemo(()=>{const m={};bus.forEach((b)=>m[b.id]=b);return m;},[bus]);
   const shown=useMemo(()=>buFilter==="all"?events:events.filter((e)=>(e.buId||null)===(buFilter===NOBU?null:buFilter)),[events,buFilter]);
@@ -363,17 +390,19 @@ function Scheduler({user}){
     if(view==="day"){const d=cursor;return `${WEEKDAYS[(d.getDay()+6)%7]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;}
     if(view==="week"){const s=days[0],e=days[6];return s.getMonth()===e.getMonth()?`${s.getDate()}–${e.getDate()} ${MONTHS[s.getMonth()]} ${s.getFullYear()}`:`${s.getDate()} ${MONTHS[s.getMonth()].slice(0,3)} – ${e.getDate()} ${MONTHS[e.getMonth()].slice(0,3)} ${e.getFullYear()}`;}
     if(view==="month") return `${MONTHS[cursor.getMonth()]} ${cursor.getFullYear()}`;
+    if(view==="reminders"){const n=reminders.filter((r)=>!r.done).length;return `Promemoria · ${n} da fare`;}
+    if(view==="archive"){const n=shown.filter((e)=>e.done).length;return `Archivio · ${n} ${n===1?"completata":"completate"}`;}
     const e=addDays(ganttStart,GANTT_DAYS-1);return `${ganttStart.getDate()} ${MONTHS[ganttStart.getMonth()].slice(0,3)} – ${e.getDate()} ${MONTHS[e.getMonth()].slice(0,3)}`;
-  },[view,cursor,days,ganttStart]);
+  },[view,cursor,days,ganttStart,shown,reminders]);
 
   const defaultBu=()=>buFilter!=="all"&&buFilter!==NOBU?buFilter:null;
   const newEventAt=(dateKey,hour,minute=0,activity=null)=>{
     const endMin=minute+(activity?.dur??60);let eh=hour+Math.floor(endMin/60),em=endMin%60;if(eh>=24){eh=23;em=59;}
-    setEditing({id:null,activityId:activity?.id??null,buId:activity?.buId??defaultBu(),title:activity?.name??"",color:activity?.color??PALETTE[0],startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,_isNew:true});
+    setEditing({id:null,activityId:activity?.id??null,buId:activity?.buId??defaultBu(),title:activity?.name??"",color:activity?.color??PALETTE[0],startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:true,inGantt:true,_isNew:true});
   };
-  const openEvent=(ev)=>{const s=new Date(ev.start),e=new Date(ev.end);setEditing({id:ev.id,activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,startDate:toDateKey(s),startTime:timeStr(s),endDate:toDateKey(e),endTime:timeStr(e),note:ev.note||"",done:!!ev.done,_isNew:false});};
+  const openEvent=(ev)=>{const s=new Date(ev.start),e=new Date(ev.end);setEditing({id:ev.id,activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,startDate:toDateKey(s),startTime:timeStr(s),endDate:toDateKey(e),endTime:timeStr(e),note:ev.note||"",done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,_isNew:false});};
 
-  const VIEWS=[["day","Giorno","calendar"],["week","Settimana","calendar"],["month","Mese","grid"],["gantt","Gantt","gantt"]];
+  const VIEWS=[["day","Giorno","calendar"],["week","Settimana","calendar"],["month","Mese","grid"],["gantt","Gantt","gantt"],["reminders","Promemoria","bell"],["archive","Archivio","archive"]];
 
   return (
     <div className="gp-shell">
@@ -383,12 +412,12 @@ function Scheduler({user}){
           <div className="gp-seg">
             {VIEWS.map(([v,lbl,ic])=>(<button key={v} className={view===v?"on":""} onClick={()=>setView(v)}><Icon name={ic} size={14}/> <span className="hide-sm">{lbl}</span></button>))}
           </div>
-          <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>
-          <select className="gp-select" value={buFilter} onChange={(e)=>setBuFilter(e.target.value)}>
+          {view!=="archive" && view!=="reminders" && <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>}
+          {view!=="reminders" && (<select className="gp-select" value={buFilter} onChange={(e)=>setBuFilter(e.target.value)}>
             <option value="all">Tutte le BU</option>
             {bus.map((b)=><option key={b.id} value={b.id}>{b.name}</option>)}
             <option value={NOBU}>Senza BU</option>
-          </select>
+          </select>)}
           <button className="gp-icon" title="Gestisci attività e BU" onClick={()=>setManage("activities")}><Icon name="settings" size={17}/></button>
           <button className="gp-btn solid" onClick={()=>newEventAt(toDateKey(view==="day"||view==="month"?cursor:new Date()),new Date().getHours())}><Icon name="plus" size={16}/> <span className="hide-sm">Nuovo</span></button>
           <button className="gp-icon" title="Esci" onClick={()=>auth.signOut()}><Icon name="logout" size={16}/></button>
@@ -397,11 +426,15 @@ function Scheduler({user}){
 
       <main className="gp-wrap">
         {(view==="day"||view==="week") &&
-          <div className="gp-panel"><DayWeek days={days} view={view} events={shown} buMap={buMap} onSlot={newEventAt} onEvent={openEvent}/></div>}
+          <div className="gp-panel"><DayWeek days={days} view={view} events={shown.filter((e)=>e.inCalendar!==false)} buMap={buMap} onSlot={newEventAt} onEvent={openEvent}/></div>}
         {view==="month" &&
-          <div className="gp-panel gp-month"><MonthView cursor={cursor} events={shown} buMap={buMap} onDay={(k)=>newEventAt(k,9)} onEvent={openEvent}/></div>}
+          <div className="gp-panel gp-month"><MonthView cursor={cursor} events={shown.filter((e)=>e.inCalendar!==false)} buMap={buMap} onDay={(k)=>newEventAt(k,9)} onEvent={openEvent}/></div>}
         {view==="gantt" &&
-          <GanttView start={ganttStart} events={shown} bus={bus} buFilter={buFilter} onEvent={openEvent} onToggle={toggleDone}/>}
+          <GanttView start={ganttStart} events={shown.filter((e)=>e.inGantt!==false)} bus={bus} buFilter={buFilter} onNew={()=>newEventAt(toDateKey(new Date()),9)} onEvent={openEvent} onToggle={toggleDone}/>}
+        {view==="archive" &&
+          <ArchiveView events={shown.filter((e)=>e.done)} buMap={buMap} onEvent={openEvent} onToggle={toggleDone} onDelete={deleteEvent}/>}
+        {view==="reminders" &&
+          <ReminderView reminders={reminders} onAdd={addReminder} onUpdate={updateReminder} onDelete={deleteReminder}/>}
       </main>
 
       {manage && <ManageDrawer tab={manage} setTab={setManage} activities={activities} bus={bus} buMap={buMap}
@@ -469,7 +502,7 @@ function MonthView({cursor,events,buMap,onDay,onEvent}){
 }
 
 /* ---- Gantt ---- */
-function GanttView({start,events,bus,buFilter,onEvent,onToggle}){
+function GanttView({start,events,bus,buFilter,onNew,onEvent,onToggle}){
   const days=Array.from({length:GANTT_DAYS},(_,i)=>addDays(start,i));
   const rangeEnd=addDays(start,GANTT_DAYS);
   const today=startOfDay(new Date());
@@ -487,6 +520,9 @@ function GanttView({start,events,bus,buFilter,onEvent,onToggle}){
 
   return (
     <div>
+      <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
+        <button className="gp-btn ghost sm" onClick={onNew}><Icon name="plus" size={15}/> Nuova attività</button>
+      </div>
       <div className="gp-gantt-kpis">
         <div className="gp-kpi"><div className="klabel">Totali</div><div className="kval">{total}</div></div>
         <div className="gp-kpi done"><div className="klabel">Completati</div><div className="kval">{done}</div></div>
@@ -530,6 +566,69 @@ function GanttView({start,events,bus,buFilter,onEvent,onToggle}){
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---- Promemoria ---- */
+function ReminderView({reminders,onAdd,onUpdate,onDelete}){
+  const [text,setText]=useState(""),[due,setDue]=useState(""),[editId,setEditId]=useState(null),[editText,setEditText]=useState("");
+  const today=toDateKey(new Date());
+  const add=()=>{if(!text.trim())return;onAdd(text.trim(),due);setText("");setDue("");};
+  const todo=reminders.filter((r)=>!r.done).sort((a,b)=>{if(!a.due)return 1;if(!b.due)return -1;return a.due.localeCompare(b.due);});
+  const done=reminders.filter((r)=>r.done).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  const saveEdit=(r)=>{if(editText.trim()&&editText.trim()!==r.text)onUpdate(r.id,{text:editText.trim()});setEditId(null);};
+  const dueBadge=(r)=>{if(!r.due)return null;const d=fromDateKey(r.due);let cls="",lbl=`${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}`;
+    if(!r.done&&r.due<today){cls="late";lbl="Scaduto · "+lbl;}else if(!r.done&&r.due===today){cls="today";lbl="Oggi";}
+    return <span className={`gp-rdue ${cls}`}>{lbl}</span>;};
+  const Row=(r)=>(
+    <div key={r.id} className="gp-rrow">
+      <div className={`gp-check ${r.done?"on":""}`} onClick={()=>onUpdate(r.id,{done:!r.done})}>{r.done&&<Icon name="check" size={12} style={{color:"#fff"}}/>}</div>
+      {editId===r.id
+        ? <input className="gp-input" autoFocus value={editText} onChange={(e)=>setEditText(e.target.value)} onKeyDown={(e)=>e.key==="Enter"&&saveEdit(r)} onBlur={()=>saveEdit(r)}/>
+        : <span className={`gp-rtext ${r.done?"done":""}`} onClick={()=>{setEditId(r.id);setEditText(r.text);}}>{r.text}</span>}
+      {dueBadge(r)}
+      <button className="gp-icon sm danger" onClick={()=>onDelete(r.id)}><Icon name="trash" size={15}/></button>
+    </div>
+  );
+  return (
+    <div className="gp-panel" style={{padding:"16px"}}>
+      <div className="gp-radd">
+        <input className="gp-input" placeholder="Aggiungi un promemoria…" value={text} onChange={(e)=>setText(e.target.value)} onKeyDown={(e)=>e.key==="Enter"&&add()}/>
+        <input className="gp-input gp-rdate" type="date" value={due} onChange={(e)=>setDue(e.target.value)}/>
+        <button className="gp-btn solid" onClick={add}><Icon name="plus" size={16}/> Aggiungi</button>
+      </div>
+      {todo.length===0&&done.length===0&&<div className="gp-empty">Nessun promemoria. Scrivine uno qui sopra.</div>}
+      <div className="gp-rlist">{todo.map(Row)}</div>
+      {done.length>0&&<><div className="gp-rsep">Completati ({done.length})</div><div className="gp-rlist">{done.map(Row)}</div></>}
+    </div>
+  );
+}
+
+/* ---- Archivio completate ---- */
+function ArchiveView({events,buMap,onEvent,onToggle,onDelete}){
+  const sorted=[...events].sort((a,b)=>new Date(b.end)-new Date(a.end));
+  if(sorted.length===0) return <div className="gp-panel"><div className="gp-empty">Nessuna attività completata. Spunta un'attività come fatta per ritrovarla qui.</div></div>;
+  const groups=[];
+  sorted.forEach((ev)=>{const d=new Date(ev.end);const key=`${d.getFullYear()}-${d.getMonth()}`;let g=groups.find((x)=>x.key===key);if(!g){g={key,label:`${MONTHS[d.getMonth()]} ${d.getFullYear()}`,items:[]};groups.push(g);}g.items.push(ev);});
+  return (
+    <div className="gp-panel" style={{padding:"6px 0 12px"}}>
+      {groups.map((g)=>(
+        <div key={g.key}>
+          <div className="gp-arch-month">{g.label} · {g.items.length}</div>
+          {g.items.map((ev)=>{const d=new Date(ev.end);const bu=ev.buId&&buMap[ev.buId]?buMap[ev.buId]:null;
+            return (<div key={ev.id} className="gp-arch-row">
+              <div className="gp-check on" title="Riapri (segna da fare)" onClick={()=>onToggle(ev)}><Icon name="check" size={12} style={{color:"#fff"}}/></div>
+              <button className="gp-arch-main" onClick={()=>onEvent(ev)}>
+                <span className="pdot" style={{background:ev.color}}/>
+                <span className="gp-arch-title">{ev.title}</span>
+                {bu&&<span className="gp-arch-bu" style={{background:bu.color}}>{bu.name}</span>}
+                <span className="gp-arch-date">{d.getDate()} {MONTHS[d.getMonth()].slice(0,3)}</span>
+              </button>
+              <button className="gp-icon sm danger" onClick={()=>onDelete(ev.id)}><Icon name="trash" size={15}/></button>
+            </div>);})}
+        </div>
+      ))}
     </div>
   );
 }
@@ -630,6 +729,9 @@ function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete}){
           <label className="gp-lbl">Colore</label>
           <Swatches value={draft.color} onPick={(c)=>set({color:c})}/>
           <div className={`gp-toggle ${draft.done?"on":""}`} onClick={()=>set({done:!draft.done})}><div className="sw"/><span className="txt">{draft.done?"Completata":"Da fare"}</span></div>
+          <label className="gp-lbl">Dove farla comparire</label>
+          <div className={`gp-toggle ${draft.inCalendar!==false?"on":""}`} onClick={()=>set({inCalendar:draft.inCalendar===false})}><div className="sw"/><span className="txt">Nel calendario (Giorno · Settimana · Mese)</span></div>
+          <div className={`gp-toggle ${draft.inGantt!==false?"on":""}`} onClick={()=>set({inGantt:draft.inGantt===false})}><div className="sw"/><span className="txt">Nel Gantt</span></div>
           <label className="gp-lbl"><Icon name="note" size={13} style={{marginRight:5}}/>Note</label>
           <textarea className="gp-input gp-area" rows={3} placeholder="Dettagli, luogo, promemoria…" value={draft.note} onChange={(e)=>set({note:e.target.value})}/>
         </div>
