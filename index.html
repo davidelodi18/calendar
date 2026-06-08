@@ -218,7 +218,7 @@
   .gp-bucket-body{display:flex;flex-direction:column;gap:8px;flex:1}
   .gp-bucket-empty{font-size:12px;font-weight:700;color:#C2B4A0;text-align:center;padding:14px 6px;border:1.5px dashed #E4D7C2;border-radius:11px}
 
-  .gp-pchip{display:flex;align-items:center;gap:9px;background:#FFFDF8;border:1px solid #E4D7C2;border-radius:11px;padding:8px 10px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 1px 3px rgba(90,74,61,.06);transition:box-shadow .12s}
+  .gp-pchip{display:flex;align-items:center;gap:9px;background:#FFFDF8;border:1px solid #E4D7C2;border-radius:11px;padding:8px 10px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 1px 3px rgba(90,74,61,.06);transition:box-shadow .12s}
   .gp-pchip:active{cursor:grabbing}
   .gp-pchip .pdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
   .gp-pchip .pbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
@@ -232,9 +232,32 @@
   .gp-pmini button:hover{background:#F4ECDF}
   .gp-pmini button:disabled{opacity:.3;cursor:not-allowed}
   .gp-pmini button.danger{color:#9E4444}
-  .gp-late-chip{display:inline-flex;align-items:center;gap:8px;background:#FFFDF8;border:1px solid #E8C9C9;border-radius:11px;padding:7px 11px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;font-weight:700;font-size:13px;box-shadow:0 1px 3px rgba(90,74,61,.06)}
+  .gp-pmini button.accent{color:#C75D3A;border-color:#EAC9BC;background:#FFF6ED}
+  .gp-pmini button.accent:hover{background:#FCEDE5}
+  .gp-late-chip{display:inline-flex;align-items:center;gap:8px;background:#FFFDF8;border:1px solid #E8C9C9;border-radius:11px;padding:7px 11px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;font-weight:700;font-size:13px;box-shadow:0 1px 3px rgba(90,74,61,.06)}
   .gp-late-chip .pdot{width:9px;height:9px;border-radius:50%}
   .gp-late-chip .od{font-size:10.5px;font-weight:800;color:#9E4444}
+  .gp-late-chip .lc-btn{border:1px solid #EAC9BC;background:#FFF6ED;color:#C75D3A;border-radius:7px;width:24px;height:24px;display:grid;place-items:center;cursor:pointer;flex-shrink:0}
+  .gp-late-chip .lc-btn:hover{background:#FCEDE5}
+
+  /* MENÙ A TOCCO (sheet) */
+  .gp-sheet-ov{position:fixed;inset:0;z-index:80;background:rgba(58,46,38,.42);backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;animation:gp-fade .18s ease}
+  .gp-sheet{width:min(460px,100%);background:#FBF5EA;border-radius:20px 20px 0 0;padding:18px;box-shadow:0 -10px 40px rgba(58,46,38,.25);animation:gp-up .22s cubic-bezier(.2,.7,.3,1);max-height:88vh;overflow-y:auto}
+  @keyframes gp-up{from{transform:translateY(26px);opacity:.5}to{transform:translateY(0);opacity:1}}
+  .gp-sheet-h{display:flex;align-items:center;gap:10px}
+  .gp-sheet-h .pdot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+  .gp-sheet-h .nm{font-weight:800;font-size:16px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gp-sheet-sub{font-size:11.5px;font-weight:800;color:#8A7A6D;text-transform:uppercase;letter-spacing:.4px;margin:16px 0 9px}
+  .gp-lvlgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .gp-lvlbtn{display:flex;align-items:center;gap:9px;border:1.5px solid #E4D7C2;background:#FFFDF8;border-radius:13px;padding:13px 12px;cursor:pointer;font-family:inherit;font-weight:800;font-size:13.5px;color:#3A2E26;text-align:left;transition:.13s}
+  .gp-lvlbtn .d{width:14px;height:14px;border-radius:5px;flex-shrink:0}
+  .gp-lvlbtn:hover{background:#F4ECDF}
+  .gp-lvlbtn.on{border-color:var(--bk,#C75D3A);background:#FFF6ED;box-shadow:0 2px 8px rgba(199,93,58,.16)}
+  .gp-sheet-days{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  @media (min-width:560px){
+    .gp-sheet-ov{align-items:center}
+    .gp-sheet{border-radius:20px}
+  }
 
   .gp-pool{border:1.5px solid #E4D7C2;background:#FBF5EA;border-radius:16px;padding:13px;margin-top:14px}
   .gp-pool.is-drop{border-color:#C75D3A;border-style:dashed;background:#FFF6ED}
@@ -392,6 +415,7 @@ function Icon({name,size=18,style}){
     case "flag":return <svg {...c}><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>;
     case "bell":return <svg {...c}><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>;
     case "archive":return <svg {...c}><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>;
+    case "move":return <svg {...c}><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>;
     default:return null;
   }
 }
@@ -759,7 +783,8 @@ function PriorityView({events,bus,buMap,onEvent,onToggle,onReorder,onSetLevel,on
   const [weekStart,setWeekStart]=useState(()=>startOfWeek(new Date()));
   const [selKey,setSelKey]=useState(()=>toDateKey(new Date()));
   const [drag,setDrag]=useState(null);            // {ev,x,y,over}
-  const dragRef=useRef(null), overRef=useRef(null);
+  const [menuEv,setMenuEv]=useState(null);        // task su cui aprire il menù a tocco
+  const dragRef=useRef(null), overRef=useRef(null), justDragRef=useRef(false);
   const today=startOfDay(new Date());
   const weekDays=Array.from({length:7},(_,i)=>addDays(weekStart,i));
   const selDay=fromDateKey(selKey);
@@ -775,13 +800,20 @@ function PriorityView({events,bus,buMap,onEvent,onToggle,onReorder,onSetLevel,on
   const pool=selEvents.filter((e)=>!e.priorityLevel);
   const countFor=(d)=>onDay(d).filter((e)=>!e.done).length;
 
-  /* ---- drag (mouse + touch via Pointer Events) ---- */
+  /* ---- drag SOLO da mouse/desktop (su touch si usa il tap → menù) ---- */
   const findDrop=(x,y)=>{const el=document.elementFromPoint(x,y);const z=el&&el.closest&&el.closest("[data-drop]");return z?z.getAttribute("data-drop"):null;};
+  const endDrag=()=>{
+    window.removeEventListener("pointermove",onPointerMove);
+    window.removeEventListener("pointerup",onPointerUp);
+    window.removeEventListener("pointercancel",onPointerCancel);
+  };
   const onPointerDown=(e,ev)=>{
+    if(e.pointerType&&e.pointerType!=="mouse")return; // touch/penna: lascia gestire al click nativo
     if(e.button!==undefined&&e.button!==0)return;
     dragRef.current={ev,sx:e.clientX,sy:e.clientY,moved:false};
-    window.addEventListener("pointermove",onPointerMove);
-    window.addEventListener("pointerup",onPointerUp,{once:true});
+    window.addEventListener("pointermove",onPointerMove,{passive:false});
+    window.addEventListener("pointerup",onPointerUp);
+    window.addEventListener("pointercancel",onPointerCancel);
   };
   const onPointerMove=(e)=>{
     const d=dragRef.current;if(!d)return;
@@ -791,12 +823,11 @@ function PriorityView({events,bus,buMap,onEvent,onToggle,onReorder,onSetLevel,on
     setDrag({ev:d.ev,x:e.clientX,y:e.clientY,over});
   };
   const onPointerUp=()=>{
-    window.removeEventListener("pointermove",onPointerMove);
-    const d=dragRef.current;dragRef.current=null;
-    if(d&&d.moved){const over=overRef.current;if(over)handleDrop(d.ev,over);}
-    else if(d){onEvent(d.ev);}
+    endDrag();const d=dragRef.current;dragRef.current=null;
+    if(d&&d.moved){const over=overRef.current;if(over)handleDrop(d.ev,over);justDragRef.current=true;setTimeout(()=>{justDragRef.current=false;},350);}
     overRef.current=null;setDrag(null);
   };
+  const onPointerCancel=()=>{endDrag();dragRef.current=null;overRef.current=null;setDrag(null);};
   const handleDrop=(ev,key)=>{
     const evDay=toDateKey(startOfDay(new Date(ev.start)));
     if(key.startsWith("bucket:")){
@@ -811,21 +842,27 @@ function PriorityView({events,bus,buMap,onEvent,onToggle,onReorder,onSetLevel,on
 
   const moveInBucket=(arr,i,dir)=>{const j=i+dir;if(j<0||j>=arr.length)return;const a=[...arr];const t=a[i];a[i]=a[j];a[j]=t;onReorder(a.map((x)=>x.id));};
 
+  /* ---- menù a tocco (senza trascinare) ---- */
+  const applyLevel=(ev,lvl)=>{const evDay=toDateKey(startOfDay(new Date(ev.start)));if(evDay!==selKey)onMoveDay(ev,selKey,lvl);else onSetLevel(ev.id,lvl);setMenuEv(null);};
+  const applyDay=(ev,dk)=>{const evDay=toDateKey(startOfDay(new Date(ev.start)));if(dk!==evDay)onMoveDay(ev,dk);setSelKey(dk);setMenuEv(null);};
+
   const Chip=({ev,idx,arr,bucketKey})=>{
     const bu=ev.buId&&buMap[ev.buId]?buMap[ev.buId]:null;const s=new Date(ev.start);
     return (
-      <div className={`gp-pchip ${ev.done?"done":""}`} onPointerDown={(e)=>onPointerDown(e,ev)} title="Trascina per spostare · tocca per aprire">
+      <div className={`gp-pchip ${ev.done?"done":""}`} onPointerDown={(e)=>onPointerDown(e,ev)} onClick={()=>{if(justDragRef.current)return;setMenuEv(ev);}} title="Tocca per scegliere dove metterla (o trascina col mouse)">
         <div className={`gp-check ${ev.done?"on":""}`} onPointerDown={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();onToggle(ev);}}>{ev.done&&<Icon name="check" size={11} style={{color:"#fff"}}/>}</div>
         <span className="pdot" style={{background:ev.color}}/>
         <div className="pbody">
           <span className="pttl">{ev.title}</span>
           <span className="pmeta">{timeStr(s)}{bu&&<span className="pbu" style={{background:bu.color}}>{bu.name}</span>}</span>
         </div>
-        {bucketKey&&<div className="gp-pmini" onPointerDown={(e)=>e.stopPropagation()}>
-          <button disabled={idx===0} title="Su" onClick={(e)=>{e.stopPropagation();moveInBucket(arr,idx,-1);}}><Icon name="up" size={13}/></button>
-          <button disabled={idx===arr.length-1} title="Giù" onClick={(e)=>{e.stopPropagation();moveInBucket(arr,idx,1);}}><Icon name="down" size={13}/></button>
-          <button className="danger" title="Togli dalla priorità" onClick={(e)=>{e.stopPropagation();onSetLevel(ev.id,null);}}><Icon name="x" size={13}/></button>
-        </div>}
+        <div className="gp-pmini" onPointerDown={(e)=>e.stopPropagation()}>
+          {bucketKey&&<>
+            <button disabled={idx===0} title="Su" onClick={(e)=>{e.stopPropagation();moveInBucket(arr,idx,-1);}}><Icon name="up" size={13}/></button>
+            <button disabled={idx===arr.length-1} title="Giù" onClick={(e)=>{e.stopPropagation();moveInBucket(arr,idx,1);}}><Icon name="down" size={13}/></button>
+          </>}
+          <button className="accent" title="Assegna / sposta" onClick={(e)=>{e.stopPropagation();setMenuEv(ev);}}><Icon name="move" size={14}/></button>
+        </div>
       </div>
     );
   };
@@ -848,6 +885,11 @@ function PriorityView({events,bus,buMap,onEvent,onToggle,onReorder,onSetLevel,on
         <span style={{fontWeight:800,color:"#8A7A6D",fontSize:13}}>{wkLabel}</span>
       </div>
 
+      <div style={{display:"flex",alignItems:"center",gap:8,background:"#FFF6ED",border:"1px solid #EAD7C2",borderRadius:12,padding:"9px 12px",fontSize:12.5,fontWeight:700,color:"#8A6A50",marginBottom:14,lineHeight:1.45}}>
+        <Icon name="move" size={16} style={{flexShrink:0,color:"#C75D3A"}}/>
+        <span>Per assegnare una priorità <b>tocca un'attività</b>: si apre un menù dove scegli il riquadro o il giorno dove metterla. Da computer puoi anche <b>trascinarla</b> col mouse.</span>
+      </div>
+
       <div className="gp-daychips">
         {weekDays.map((d)=>{const k=toDateKey(d);const c=countFor(d);const isOver=drag&&drag.over===`day:${k}`;
           return (<button key={k} data-drop={`day:${k}`} className={`gp-daychip ${k===selKey?"on":""} ${sameDay(d,new Date())?"today":""} ${isOver?"is-drop":""}`} onClick={()=>setSelKey(k)}>
@@ -860,12 +902,13 @@ function PriorityView({events,bus,buMap,onEvent,onToggle,onReorder,onSetLevel,on
       {overdue.length>0 && (
         <div className={`gp-late ${drag&&drag.over==="pool"?"":""}`}>
           <div className="gp-late-h"><Icon name="flag" size={15}/> In ritardo<span className="badge">{overdue.length}</span></div>
-          <div className="gp-late-hint">Trascina un'attività su un giorno qui sopra per riprogrammarla.</div>
+          <div className="gp-late-hint">Tocca un'attività e scegli il giorno (o trascinala su un giorno qui sopra) per riprogrammarla.</div>
           <div className="gp-late-list">
             {overdue.map((ev)=>{const e=new Date(ev.end);
-              return (<div key={ev.id} className="gp-late-chip" onPointerDown={(e2)=>onPointerDown(e2,ev)} title="Trascina su un giorno · tocca per aprire">
+              return (<div key={ev.id} className="gp-late-chip" onPointerDown={(e2)=>onPointerDown(e2,ev)} onClick={()=>{if(justDragRef.current)return;setMenuEv(ev);}} title="Tocca per scegliere il giorno (o trascina col mouse)">
                 <span className="pdot" style={{background:ev.color}}/>{ev.title}
                 <span className="od">scad. {e.getDate()} {MONTHS[e.getMonth()].slice(0,3)}</span>
+                <button className="lc-btn" onPointerDown={(e2)=>e2.stopPropagation()} onClick={(e2)=>{e2.stopPropagation();setMenuEv(ev);}} title="Assegna / sposta"><Icon name="move" size={13}/></button>
               </div>);})}
           </div>
         </div>
@@ -884,7 +927,7 @@ function PriorityView({events,bus,buMap,onEvent,onToggle,onReorder,onSetLevel,on
               </div>
               <div className="gp-bucket-body">
                 {items.length===0
-                  ? <div className="gp-bucket-empty">Trascina qui un'attività</div>
+                  ? <div className="gp-bucket-empty">Trascina o tocca un'attività e scegli «{L.name}»</div>
                   : items.map((ev,i)=><Chip key={ev.id} ev={ev} idx={i} arr={items} bucketKey={L.key}/>)}
               </div>
             </div>
@@ -901,6 +944,46 @@ function PriorityView({events,bus,buMap,onEvent,onToggle,onReorder,onSetLevel,on
       {drag && <div className="gp-drag-ghost" style={{left:drag.x+14,top:drag.y+14}}>
         <span className="dot" style={{background:drag.ev.color}}/><span className="t">{drag.ev.title}</span>
       </div>}
+
+      {menuEv && <AssignSheet ev={menuEv} selKey={selKey} selLabel={selLabel} weekDays={weekDays}
+        onLevel={(l)=>applyLevel(menuEv,l)} onDay={(dk)=>applyDay(menuEv,dk)}
+        onOpen={()=>{const e=menuEv;setMenuEv(null);onEvent(e);}} onClose={()=>setMenuEv(null)}/>}
+    </div>
+  );
+}
+
+/* ---- Menù a tocco: assegna priorità / sposta giorno ---- */
+function AssignSheet({ev,selKey,selLabel,weekDays,onLevel,onDay,onOpen,onClose}){
+  const cur=ev.priorityLevel||null;
+  const evDay=toDateKey(startOfDay(new Date(ev.start)));
+  return (
+    <div className="gp-sheet-ov" onClick={onClose}>
+      <div className="gp-sheet" onClick={(e)=>e.stopPropagation()}>
+        <div className="gp-sheet-h">
+          <span className="pdot" style={{background:ev.color}}/>
+          <span className="nm">{ev.title}</span>
+          <button className="gp-icon" onClick={onClose}><Icon name="x"/></button>
+        </div>
+        <div className="gp-sheet-sub">Priorità per {selLabel}</div>
+        <div className="gp-lvlgrid">
+          {PRI_LEVELS.map((L)=>(
+            <button key={L.key} className={`gp-lvlbtn ${cur===L.key&&evDay===selKey?"on":""}`} style={{"--bk":L.color}} onClick={()=>onLevel(L.key)}>
+              <span className="d" style={{background:L.color}}/>{L.name}
+            </button>
+          ))}
+          <button className="gp-lvlbtn" style={{gridColumn:"1 / -1",justifyContent:"center"}} onClick={()=>onLevel(null)}>
+            <Icon name="x" size={14}/> Togli priorità (Da assegnare)
+          </button>
+        </div>
+        <div className="gp-sheet-sub">Sposta a un altro giorno</div>
+        <div className="gp-sheet-days">
+          {weekDays.map((d)=>{const k=toDateKey(d);
+            return (<button key={k} className={`gp-daychip ${k===evDay?"on":""} ${sameDay(d,new Date())?"today":""}`} onClick={()=>onDay(k)}>
+              <span className="wd">{WEEKDAYS[(d.getDay()+6)%7]}</span><span className="dn">{d.getDate()}</span>
+            </button>);})}
+        </div>
+        <button className="gp-btn ghost block" style={{marginTop:14}} onClick={onOpen}><Icon name="pencil" size={15}/> Apri scheda completa</button>
+      </div>
     </div>
   );
 }
