@@ -161,6 +161,90 @@
   .gp-rdue.late{background:#F8E9E9;color:#9E4444}
   .gp-rdue.today{background:#FCEDE5;color:#C75D3A}
   .gp-rsep{font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:#8A7A6D;margin:18px 0 10px}
+  .gp-rt{border:1px solid #E0D2BC;border-radius:11px;overflow:hidden;background:#FFFDF8}
+  .gp-rt-bar{display:flex;align-items:center;gap:3px;padding:6px;border-bottom:1px solid #EADFCB;background:#FBF5EA;flex-wrap:wrap}
+  .gp-rt-btn{min-width:30px;height:30px;border:none;background:none;border-radius:7px;cursor:pointer;font-size:14px;color:#5A4A3D;display:inline-flex;align-items:center;justify-content:center;font-family:inherit}
+  .gp-rt-btn:hover{background:#EADFCB}
+  .gp-rt-div{width:1px;height:18px;background:#E0D2BC;margin:0 3px}
+  .gp-rt-area{min-height:90px;max-height:240px;overflow-y:auto;padding:10px 12px;font-size:14px;line-height:1.5;outline:none;color:#3A2E26}
+  .gp-rt-area:empty:before{content:"Dettagli, luogo, promemoria…";color:#A89683}
+  .gp-rt-area ul,.gp-rt-area ol{padding-left:22px;margin:4px 0}
+  .gp-rt-area h2{font-family:'Fraunces',serif;font-size:19px;font-weight:600;margin:8px 0 2px;line-height:1.25}
+  .gp-rt-area h3{font-size:15px;font-weight:800;margin:6px 0 2px;color:#5A4A3D}
+  .gp-rt-area mark{background:#FCE6A8;color:inherit;border-radius:3px;padding:0 2px}
+  .gp-rt-area ul.gp-ck{list-style:none;padding-left:2px;margin:4px 0}
+  .gp-rt-area ul.gp-ck li{position:relative;padding-left:27px;margin:3px 0;cursor:pointer}
+  .gp-rt-area ul.gp-ck li::before{content:"";position:absolute;left:0;top:1px;width:17px;height:17px;border:2px solid #CBB99D;border-radius:6px;background:#fff;box-sizing:border-box}
+  .gp-rt-area ul.gp-ck li.on::before{background:#4A7058;border-color:#4A7058}
+  .gp-rt-area ul.gp-ck li.on::after{content:"";position:absolute;left:6px;top:4px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  .gp-rt-area ul.gp-ck li.on{color:#A89683;text-decoration:line-through}
+  .gp-rt-btn.wide{min-width:auto;padding:0 9px;font-size:12px;font-weight:800}
+  .gp-pri-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .gp-pri-title{font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:#5A4A3D}
+  .gp-prow{display:flex;align-items:center;gap:10px;background:#FFFDF8;border:1px solid #E4D7C2;border-radius:11px;padding:9px 12px}
+  .gp-pnum{width:24px;height:24px;border-radius:7px;color:#fff;font-weight:800;font-size:12px;display:grid;place-items:center;flex-shrink:0}
+  .gp-pmain{flex:1;display:flex;align-items:center;gap:10px;background:none;border:none;cursor:pointer;text-align:left;font-family:inherit;padding:0;min-width:0}
+  .gp-pname{flex:1;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gp-pmove{display:flex;gap:4px;flex-shrink:0}
+  .gp-icon.sm:disabled{opacity:.35;cursor:not-allowed}
+
+  /* PRIORITÀ SETTIMANALE */
+  .gp-pw-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .gp-pw-title{font-family:'Fraunces',serif;font-weight:600;font-size:19px;color:#5A4A3D}
+  .gp-daychips{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 6px;margin-bottom:14px;-webkit-overflow-scrolling:touch}
+  .gp-daychip{flex:0 0 auto;min-width:58px;border:1.5px solid #E4D7C2;background:#FFFDF8;border-radius:13px;padding:8px 6px;cursor:pointer;text-align:center;font-family:inherit;transition:.15s}
+  .gp-daychip .wd{display:block;font-size:10px;font-weight:800;color:#8A7A6D;text-transform:uppercase;letter-spacing:.4px}
+  .gp-daychip .dn{display:block;font-size:18px;font-weight:800;color:#3A2E26;line-height:1.2;margin-top:1px}
+  .gp-daychip .cb{display:block;font-size:10px;font-weight:700;color:#A89683;margin-top:1px;min-height:13px}
+  .gp-daychip.on{border-color:#C75D3A;background:#FFF6ED;box-shadow:0 3px 10px rgba(199,93,58,.16)}
+  .gp-daychip.on .dn{color:#C75D3A}
+  .gp-daychip.today .wd{color:#C75D3A}
+  .gp-daychip.is-drop{border-color:#C75D3A;border-style:dashed;background:#FCEDE5;transform:translateY(-2px)}
+
+  .gp-late{border:1.5px solid #E8C9C9;background:#FBEFEF;border-radius:14px;padding:11px 13px;margin-bottom:16px}
+  .gp-late-h{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:#9E4444;margin-bottom:9px}
+  .gp-late-h .badge{margin-left:auto;background:#9E4444;color:#fff;border-radius:20px;padding:1px 9px;font-size:11px}
+  .gp-late-hint{font-size:11.5px;font-weight:700;color:#B47A7A;margin-bottom:9px}
+  .gp-late-list{display:flex;flex-wrap:wrap;gap:8px}
+
+  .gp-buckets{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .gp-bucket{border:1.5px solid #E4D7C2;background:#FFFDF8;border-radius:16px;padding:13px;display:flex;flex-direction:column;min-height:120px;transition:.15s}
+  .gp-bucket.is-drop{border-color:var(--bk,#C75D3A);border-style:dashed;background:#FFF9F1}
+  .gp-bucket-h{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+  .gp-bucket-dot{width:13px;height:13px;border-radius:5px;flex-shrink:0}
+  .gp-bucket-name{font-weight:800;font-size:14px;color:#3A2E26}
+  .gp-bucket-cnt{margin-left:auto;font-size:11px;font-weight:800;color:#A89683;background:#F0E7D6;border-radius:20px;padding:2px 9px}
+  .gp-bucket-cnt.over{background:#F8E9E9;color:#9E4444}
+  .gp-bucket-body{display:flex;flex-direction:column;gap:8px;flex:1}
+  .gp-bucket-empty{font-size:12px;font-weight:700;color:#C2B4A0;text-align:center;padding:14px 6px;border:1.5px dashed #E4D7C2;border-radius:11px}
+
+  .gp-pchip{display:flex;align-items:center;gap:9px;background:#FFFDF8;border:1px solid #E4D7C2;border-radius:11px;padding:8px 10px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 1px 3px rgba(90,74,61,.06);transition:box-shadow .12s}
+  .gp-pchip:active{cursor:grabbing}
+  .gp-pchip .pdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .gp-pchip .pbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .gp-pchip .pttl{font-weight:700;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gp-pchip .pmeta{font-size:11px;font-weight:700;color:#A89683;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .gp-pchip .pbu{font-size:10px;font-weight:800;color:#fff;padding:1px 7px;border-radius:20px}
+  .gp-pchip.done .pttl{text-decoration:line-through;color:#A89683}
+  .gp-pchip .gp-check{width:18px;height:18px}
+  .gp-pmini{display:flex;gap:3px;flex-shrink:0}
+  .gp-pmini button{border:1px solid #E4D7C2;background:#FFFDF8;border-radius:7px;width:26px;height:26px;display:grid;place-items:center;cursor:pointer;color:#5A4A3D;flex-shrink:0}
+  .gp-pmini button:hover{background:#F4ECDF}
+  .gp-pmini button:disabled{opacity:.3;cursor:not-allowed}
+  .gp-pmini button.danger{color:#9E4444}
+  .gp-late-chip{display:inline-flex;align-items:center;gap:8px;background:#FFFDF8;border:1px solid #E8C9C9;border-radius:11px;padding:7px 11px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;font-weight:700;font-size:13px;box-shadow:0 1px 3px rgba(90,74,61,.06)}
+  .gp-late-chip .pdot{width:9px;height:9px;border-radius:50%}
+  .gp-late-chip .od{font-size:10.5px;font-weight:800;color:#9E4444}
+
+  .gp-pool{border:1.5px solid #E4D7C2;background:#FBF5EA;border-radius:16px;padding:13px;margin-top:14px}
+  .gp-pool.is-drop{border-color:#C75D3A;border-style:dashed;background:#FFF6ED}
+  .gp-pool-h{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:#8A7A6D;margin-bottom:11px}
+  .gp-pool-h .badge{margin-left:auto;background:#EADFCB;color:#7A6A5C;border-radius:20px;padding:1px 9px;font-size:11px}
+  .gp-pool-list{display:flex;flex-direction:column;gap:8px}
+
+  .gp-drag-ghost{position:fixed;z-index:999;pointer-events:none;display:flex;align-items:center;gap:8px;background:#FFFDF8;border:1.5px solid #C75D3A;border-radius:11px;padding:8px 12px;font-weight:800;font-size:13.5px;box-shadow:0 12px 30px rgba(58,46,38,.28);max-width:240px;color:#3A2E26}
+  .gp-drag-ghost .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .gp-drag-ghost .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
   /* OVERLAY / DRAWER / MODAL */
   .gp-overlay{position:fixed;inset:0;z-index:60;background:rgba(58,46,38,.4);backdrop-filter:blur(3px);display:flex;justify-content:flex-end;animation:gp-fade .18s ease}
@@ -233,6 +317,7 @@
     .gp-gantt-kpis{grid-template-columns:repeat(2,1fr)}
     .gp-glabel{width:150px;min-width:150px}
     .gp-mcell{min-height:74px}
+    .gp-buckets{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -272,6 +357,7 @@ function sameDay(a,b){return toDateKey(a)===toDateKey(b);}
 function startOfDay(d){const x=new Date(d);x.setHours(0,0,0,0);return x;}
 function minutesInDay(date,ref){const s=new Date(ref);s.setHours(DAY_START,0,0,0);return (date-s)/60000;}
 function combine(k,hhmm){const b=fromDateKey(k);const [h,m]=hhmm.split(":").map(Number);b.setHours(h,m,0,0);return b;}
+function stripHtml(h){return h?h.replace(/<[^>]*>/g," ").replace(/&nbsp;/g," ").replace(/\s+/g," ").trim():"";}
 function daysBetween(a,b){return Math.round((startOfDay(b)-startOfDay(a))/86400000);}
 function layoutDay(evs){
   const s=[...evs].sort((a,b)=>a._s-b._s||a._e-b._e);const lanes=[];
@@ -299,6 +385,11 @@ function Icon({name,size=18,style}){
     case "note":return <svg {...c}><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11l5-5V5a2 2 0 0 0-2-2z"/><path d="M15 21v-5a1 1 0 0 1 1-1h5"/></svg>;
     case "logout":return <svg {...c}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
     case "settings":return <svg {...c}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+    case "up":return <svg {...c}><polyline points="18 15 12 9 6 15"/></svg>;
+    case "down":return <svg {...c}><polyline points="6 9 12 15 18 9"/></svg>;
+    case "list":return <svg {...c}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
+    case "listord":return <svg {...c}><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4l2-2v-2H4"/></svg>;
+    case "flag":return <svg {...c}><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>;
     case "bell":return <svg {...c}><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>;
     case "archive":return <svg {...c}><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>;
     default:return null;
@@ -363,8 +454,37 @@ function Scheduler({user}){
   const removeActivity=(id)=>db.collection("activities").doc(id).delete();
   const upsertBu=async(x)=>{const p={name:x.name,color:x.color,uid:user.uid};x.id?await db.collection("bus").doc(x.id).set(p):await db.collection("bus").add(p);};
   const removeBu=(id)=>db.collection("bus").doc(id).delete();
-  const saveEvent=async(ev)=>{const p={activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,note:ev.note,done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,start:ev.start,end:ev.end,uid:user.uid};ev.id?await db.collection("events").doc(ev.id).set(p):await db.collection("events").add(p);};
+  const saveEvent=async(ev)=>{const p={activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,note:ev.note,done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,priorityLevel:ev.priorityLevel??null,start:ev.start,end:ev.end,uid:user.uid};ev.id?await db.collection("events").doc(ev.id).set(p):await db.collection("events").add(p);};
   const deleteEvent=async(id)=>{await db.collection("events").doc(id).delete();setEditing(null);};
+  const reorderPriorities=(ids)=>{const b=db.batch();ids.forEach((id,i)=>b.update(db.collection("events").doc(id),{priority:i}));return b.commit();};
+  const setPriorityLevel=(id,level)=>db.collection("events").doc(id).update({priorityLevel:level||null});
+  const moveEventToDay=(ev,dayKey,level)=>{
+    const s=new Date(ev.start),e=new Date(ev.end);const dur=Math.max(60000,e-s);
+    const ns=combine(dayKey,timeStr(s));const ne=new Date(ns.getTime()+dur);
+    const patch={start:ns.toISOString(),end:ne.toISOString()};
+    if(level!==undefined)patch.priorityLevel=level||null;
+    return db.collection("events").doc(ev.id).update(patch);
+  };
+  const submitEvent=async(d)=>{
+    const base={activityId:d.activityId,buId:d.buId||null,title:(d.title.trim()||"Senza titolo"),color:d.color,note:d.note,done:!!d.done,inCalendar:d.inCalendar!==false,inGantt:d.inGantt!==false,priority:d.priority??null,priorityLevel:d.priorityLevel??null,uid:user.uid};
+    const deltaDays=daysBetween(fromDateKey(d.startDate),fromDateKey(d.endDate));
+    const mk=(dayKey)=>{const start=combine(dayKey,d.startTime);let end=combine(toDateKey(addDays(fromDateKey(dayKey),deltaDays)),d.endTime);if(end<=start)end=new Date(start.getTime()+30*60000);return {start:start.toISOString(),end:end.toISOString()};};
+    if(d._isNew && d.repeat && d.repeat!=="none"){
+      const until=d.repeatUntil?fromDateKey(d.repeatUntil):addDays(fromDateKey(d.startDate),30);
+      const dates=[];let cur=fromDateKey(d.startDate),guard=0;
+      while(cur<=until && guard<400){const wd=(cur.getDay()+6)%7;let ok=false;
+        if(d.repeat==="daily")ok=true;else if(d.repeat==="weekly")ok=daysBetween(fromDateKey(d.startDate),cur)%7===0;else if(d.repeat==="custom")ok=(d.repeatDays||[]).includes(wd);
+        if(ok)dates.push(toDateKey(cur));cur=addDays(cur,1);guard++;}
+      if(dates.length===0)dates.push(d.startDate);
+      const seriesId="s-"+Date.now();const batch=db.batch();
+      dates.slice(0,366).forEach((k)=>{const {start,end}=mk(k);batch.set(db.collection("events").doc(),{...base,start,end,seriesId});});
+      await batch.commit();
+    } else {
+      const {start,end}=mk(d.startDate);
+      d.id?await db.collection("events").doc(d.id).set({...base,start,end}):await db.collection("events").add({...base,start,end});
+    }
+    setEditing(null);
+  };
   const toggleDone=(ev)=>db.collection("events").doc(ev.id).update({done:!ev.done});
   const addReminder=(text,due)=>db.collection("reminders").add({text,due:due||"",done:false,createdAt:Date.now(),uid:user.uid});
   const updateReminder=(id,patch)=>db.collection("reminders").doc(id).update(patch);
@@ -390,6 +510,7 @@ function Scheduler({user}){
     if(view==="day"){const d=cursor;return `${WEEKDAYS[(d.getDay()+6)%7]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;}
     if(view==="week"){const s=days[0],e=days[6];return s.getMonth()===e.getMonth()?`${s.getDate()}–${e.getDate()} ${MONTHS[s.getMonth()]} ${s.getFullYear()}`:`${s.getDate()} ${MONTHS[s.getMonth()].slice(0,3)} – ${e.getDate()} ${MONTHS[e.getMonth()].slice(0,3)} ${e.getFullYear()}`;}
     if(view==="month") return `${MONTHS[cursor.getMonth()]} ${cursor.getFullYear()}`;
+    if(view==="priority") return "Priorità · pianificazione settimanale";
     if(view==="reminders"){const n=reminders.filter((r)=>!r.done).length;return `Promemoria · ${n} da fare`;}
     if(view==="archive"){const n=shown.filter((e)=>e.done).length;return `Archivio · ${n} ${n===1?"completata":"completate"}`;}
     const e=addDays(ganttStart,GANTT_DAYS-1);return `${ganttStart.getDate()} ${MONTHS[ganttStart.getMonth()].slice(0,3)} – ${e.getDate()} ${MONTHS[e.getMonth()].slice(0,3)}`;
@@ -398,11 +519,11 @@ function Scheduler({user}){
   const defaultBu=()=>buFilter!=="all"&&buFilter!==NOBU?buFilter:null;
   const newEventAt=(dateKey,hour,minute=0,activity=null)=>{
     const endMin=minute+(activity?.dur??60);let eh=hour+Math.floor(endMin/60),em=endMin%60;if(eh>=24){eh=23;em=59;}
-    setEditing({id:null,activityId:activity?.id??null,buId:activity?.buId??defaultBu(),title:activity?.name??"",color:activity?.color??PALETTE[0],startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:true,inGantt:true,_isNew:true});
+    setEditing({id:null,activityId:activity?.id??null,buId:activity?.buId??defaultBu(),title:activity?.name??"",color:activity?.color??PALETTE[0],startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:true,inGantt:true,priority:null,priorityLevel:null,repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
   };
-  const openEvent=(ev)=>{const s=new Date(ev.start),e=new Date(ev.end);setEditing({id:ev.id,activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,startDate:toDateKey(s),startTime:timeStr(s),endDate:toDateKey(e),endTime:timeStr(e),note:ev.note||"",done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,_isNew:false});};
+  const openEvent=(ev)=>{const s=new Date(ev.start),e=new Date(ev.end);setEditing({id:ev.id,activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,startDate:toDateKey(s),startTime:timeStr(s),endDate:toDateKey(e),endTime:timeStr(e),note:ev.note||"",done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,priority:ev.priority??null,priorityLevel:ev.priorityLevel??null,_isNew:false});};
 
-  const VIEWS=[["day","Giorno","calendar"],["week","Settimana","calendar"],["month","Mese","grid"],["gantt","Gantt","gantt"],["reminders","Promemoria","bell"],["archive","Archivio","archive"]];
+  const VIEWS=[["day","Giorno","calendar"],["week","Settimana","calendar"],["month","Mese","grid"],["gantt","Gantt","gantt"],["priority","Priorità","flag"],["reminders","Promemoria","bell"],["archive","Archivio","archive"]];
 
   return (
     <div className="gp-shell">
@@ -412,7 +533,7 @@ function Scheduler({user}){
           <div className="gp-seg">
             {VIEWS.map(([v,lbl,ic])=>(<button key={v} className={view===v?"on":""} onClick={()=>setView(v)}><Icon name={ic} size={14}/> <span className="hide-sm">{lbl}</span></button>))}
           </div>
-          {view!=="archive" && view!=="reminders" && <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>}
+          {view!=="archive" && view!=="reminders" && view!=="priority" && <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>}
           {view!=="reminders" && (<select className="gp-select" value={buFilter} onChange={(e)=>setBuFilter(e.target.value)}>
             <option value="all">Tutte le BU</option>
             {bus.map((b)=><option key={b.id} value={b.id}>{b.name}</option>)}
@@ -433,6 +554,8 @@ function Scheduler({user}){
           <GanttView start={ganttStart} events={shown.filter((e)=>e.inGantt!==false)} bus={bus} buFilter={buFilter} onNew={()=>newEventAt(toDateKey(new Date()),9)} onEvent={openEvent} onToggle={toggleDone}/>}
         {view==="archive" &&
           <ArchiveView events={shown.filter((e)=>e.done)} buMap={buMap} onEvent={openEvent} onToggle={toggleDone} onDelete={deleteEvent}/>}
+        {view==="priority" &&
+          <PriorityView events={shown} bus={bus} buMap={buMap} onEvent={openEvent} onToggle={toggleDone} onReorder={reorderPriorities} onSetLevel={setPriorityLevel} onMoveDay={moveEventToDay}/>}
         {view==="reminders" &&
           <ReminderView reminders={reminders} onAdd={addReminder} onUpdate={updateReminder} onDelete={deleteReminder}/>}
       </main>
@@ -442,9 +565,7 @@ function Scheduler({user}){
         onUpsertBu={upsertBu} onRemoveBu={removeBu} onSeedBu={seedBus}
         onUse={(a)=>{setManage(null);newEventAt(toDateKey(view==="day"||view==="month"?cursor:new Date()),new Date().getHours(),0,a);}}/>}
 
-      {editing && <EventModal draft={editing} activities={activities} bus={bus} onChange={setEditing} onClose={()=>setEditing(null)} onDelete={deleteEvent}
-        onSave={(d)=>{const start=combine(d.startDate,d.startTime);let end=combine(d.endDate,d.endTime);if(end<=start)end=new Date(start.getTime()+30*60000);
-          saveEvent({id:d.id,activityId:d.activityId,buId:d.buId,title:(d.title.trim()||"Senza titolo"),color:d.color,note:d.note,done:d.done,inCalendar:d.inCalendar,inGantt:d.inGantt,start:start.toISOString(),end:end.toISOString()});setEditing(null);}}/>}
+      {editing && <EventModal draft={editing} activities={activities} bus={bus} onChange={setEditing} onClose={()=>setEditing(null)} onDelete={deleteEvent} onSave={submitEvent}/>}
     </div>
   );
 }
@@ -471,7 +592,7 @@ function DayWeek({days,view,events,buMap,onSlot,onEvent}){
               return (<button key={ev.id} className={`gp-event ${ev.done?"done":""}`} style={{top,height,left:`calc(${ev._lane*w}% + 3px)`,width:`calc(${w}% - 6px)`,background:hexToRgba(ev.color,0.16),borderLeft:`3px solid ${ev.color}`}} onClick={(e)=>{e.stopPropagation();onEvent(ev);}}>
                 <span className="ev-title" style={{color:ev.color}}>{ev.title}</span>
                 {height>34&&<span className="ev-time">{timeStr(new Date(ev.start))}–{timeStr(new Date(ev.end))}{ev.buId&&buMap[ev.buId]?" · "+buMap[ev.buId].name:""}</span>}
-                {ev.note&&height>56&&<span className="ev-note">{ev.note}</span>}
+                {stripHtml(ev.note)&&height>56&&<span className="ev-note">{stripHtml(ev.note)}</span>}
               </button>);})}
           </div>);})}
       </div>
@@ -566,6 +687,220 @@ function GanttView({start,events,bus,buFilter,onNew,onEvent,onToggle}){
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---- Editor note formattate (stile Note) ---- */
+function RichNote({value,onChange}){
+  const ref=useRef(null);
+  useEffect(()=>{if(ref.current)ref.current.innerHTML=value||"";},[]);
+  const sync=()=>onChange(ref.current.innerHTML);
+  const cmd=(c,v=null)=>{document.execCommand(c,false,v);ref.current.focus();sync();};
+  const block=(tag)=>{document.execCommand("formatBlock",false,tag);ref.current.focus();sync();};
+  const highlight=()=>{document.execCommand("hiliteColor",false,"#FCE6A8");ref.current.focus();sync();};
+  const checklist=()=>{document.execCommand("insertHTML",false,'<ul class="gp-ck"><li>Nuova voce</li></ul>');ref.current.focus();sync();};
+  const areaClick=(e)=>{
+    const li=e.target.closest&&e.target.closest("ul.gp-ck > li");
+    if(!li)return;const r=li.getBoundingClientRect();
+    if(e.clientX-r.left<=24){li.classList.toggle("on");sync();}
+  };
+  const Btn=({c,label,style,title})=>(<button className="gp-rt-btn" title={title} style={style} onMouseDown={(e)=>{e.preventDefault();cmd(c);}}>{label}</button>);
+  const Act=({fn,label,style,title,cls})=>(<button className={`gp-rt-btn ${cls||""}`} title={title} style={style} onMouseDown={(e)=>{e.preventDefault();fn();}}>{label}</button>);
+  return (
+    <div className="gp-rt">
+      <div className="gp-rt-bar">
+        <Act fn={()=>block("H2")} label="T" cls="wide" title="Titolo" style={{fontFamily:"'Fraunces',serif",fontWeight:600,fontSize:16}}/>
+        <Act fn={()=>block("H3")} label="t" cls="wide" title="Sottotitolo" style={{fontWeight:800,fontSize:14}}/>
+        <Act fn={()=>block("P")} label="¶" title="Testo normale"/>
+        <span className="gp-rt-div"/>
+        <Btn c="bold" label="B" title="Grassetto" style={{fontWeight:800}}/>
+        <Btn c="italic" label="I" title="Corsivo" style={{fontStyle:"italic"}}/>
+        <Btn c="underline" label="U" title="Sottolineato" style={{textDecoration:"underline"}}/>
+        <Btn c="strikeThrough" label="S" title="Barrato" style={{textDecoration:"line-through"}}/>
+        <Act fn={highlight} label="H" title="Evidenzia" style={{background:"#FCE6A8",fontWeight:800}}/>
+        <span className="gp-rt-div"/>
+        <Act fn={checklist} label={<Icon name="check" size={15}/>} title="Checklist"/>
+        <Btn c="insertUnorderedList" label={<Icon name="list" size={15}/>} title="Elenco puntato"/>
+        <Btn c="insertOrderedList" label={<Icon name="listord" size={15}/>} title="Elenco numerato"/>
+        <span className="gp-rt-div"/>
+        <Btn c="removeFormat" label="⌫" title="Pulisci formattazione"/>
+      </div>
+      <div className="gp-rt-area" ref={ref} contentEditable onInput={sync} onClick={areaClick} suppressContentEditableWarning={true}/>
+    </div>
+  );
+}
+
+/* ---- Ricorrenza (inserimento massivo) ---- */
+function Recurrence({draft,set}){
+  const opts=[["none","Mai"],["daily","Ogni giorno"],["weekly","Ogni settimana"],["custom","Giorni scelti"]];
+  const rep=draft.repeat||"none";
+  const on={borderColor:"#C75D3A",background:"rgba(199,93,58,.12)",color:"#3A2E26"};
+  const setRep=(v)=>{const p={repeat:v};if(v!=="none"&&!draft.repeatUntil)p.repeatUntil=toDateKey(addDays(fromDateKey(draft.startDate),30));set(p);};
+  const toggleDay=(i)=>{const arr=draft.repeatDays||[];set({repeatDays:arr.includes(i)?arr.filter((x)=>x!==i):[...arr,i]});};
+  return (
+    <div style={{marginTop:8}}>
+      <label className="gp-lbl">Ripeti su più date</label>
+      <div className="gp-chips">{opts.map(([v,l])=>(<button key={v} className={`gp-chip ${rep===v?"on":""}`} style={rep===v?on:{}} onClick={()=>setRep(v)}>{l}</button>))}</div>
+      {rep==="custom" && (<><label className="gp-lbl">Giorni della settimana</label><div className="gp-chips">{WEEKDAYS.map((w,i)=>(<button key={w} className={`gp-chip ${(draft.repeatDays||[]).includes(i)?"on":""}`} style={(draft.repeatDays||[]).includes(i)?on:{}} onClick={()=>toggleDay(i)}>{w}</button>))}</div></>)}
+      {rep!=="none" && (<><label className="gp-lbl">Fino al</label><input className="gp-input" type="date" value={draft.repeatUntil||""} onChange={(e)=>set({repeatUntil:e.target.value})}/></>)}
+    </div>
+  );
+}
+
+/* ---- Priorità · board settimanale con drag & drop ---- */
+const PRI_LEVELS=[
+  {key:"top3",name:"Top 3 della giornata",color:"#C75D3A",cap:3},
+  {key:"high",name:"Priorità alta",color:"#9E4444"},
+  {key:"mid",name:"Priorità media",color:"#D9A441"},
+  {key:"low",name:"Priorità bassa",color:"#7E9B6E"},
+];
+function PriorityView({events,bus,buMap,onEvent,onToggle,onReorder,onSetLevel,onMoveDay}){
+  const [weekStart,setWeekStart]=useState(()=>startOfWeek(new Date()));
+  const [selKey,setSelKey]=useState(()=>toDateKey(new Date()));
+  const [drag,setDrag]=useState(null);            // {ev,x,y,over}
+  const dragRef=useRef(null), overRef=useRef(null);
+  const today=startOfDay(new Date());
+  const weekDays=Array.from({length:7},(_,i)=>addDays(weekStart,i));
+  const selDay=fromDateKey(selKey);
+
+  // mantieni il giorno selezionato dentro la settimana mostrata
+  useEffect(()=>{const inWeek=weekDays.some((d)=>toDateKey(d)===selKey);if(!inWeek)setSelKey(toDateKey(weekDays[0]));},[weekStart]);
+
+  const onDay=(d)=>{const ws=startOfDay(d),we=addDays(ws,1);return events.filter((ev)=>ev.inGantt!==false&&new Date(ev.end)>ws&&new Date(ev.start)<we);};
+  const selEvents=onDay(selDay).sort((a,b)=>{const pa=a.priority??9999,pb=b.priority??9999;return pa-pb||new Date(a.start)-new Date(b.start);});
+  const overdue=events.filter((ev)=>ev.inGantt!==false&&!ev.done&&startOfDay(new Date(ev.end))<today)
+    .sort((a,b)=>new Date(a.end)-new Date(b.end));
+  const bucket=(k)=>selEvents.filter((e)=>(e.priorityLevel||null)===k);
+  const pool=selEvents.filter((e)=>!e.priorityLevel);
+  const countFor=(d)=>onDay(d).filter((e)=>!e.done).length;
+
+  /* ---- drag (mouse + touch via Pointer Events) ---- */
+  const findDrop=(x,y)=>{const el=document.elementFromPoint(x,y);const z=el&&el.closest&&el.closest("[data-drop]");return z?z.getAttribute("data-drop"):null;};
+  const onPointerDown=(e,ev)=>{
+    if(e.button!==undefined&&e.button!==0)return;
+    dragRef.current={ev,sx:e.clientX,sy:e.clientY,moved:false};
+    window.addEventListener("pointermove",onPointerMove);
+    window.addEventListener("pointerup",onPointerUp,{once:true});
+  };
+  const onPointerMove=(e)=>{
+    const d=dragRef.current;if(!d)return;
+    if(!d.moved){if(Math.abs(e.clientX-d.sx)<6&&Math.abs(e.clientY-d.sy)<6)return;d.moved=true;}
+    if(e.cancelable)e.preventDefault();
+    const over=findDrop(e.clientX,e.clientY);overRef.current=over;
+    setDrag({ev:d.ev,x:e.clientX,y:e.clientY,over});
+  };
+  const onPointerUp=()=>{
+    window.removeEventListener("pointermove",onPointerMove);
+    const d=dragRef.current;dragRef.current=null;
+    if(d&&d.moved){const over=overRef.current;if(over)handleDrop(d.ev,over);}
+    else if(d){onEvent(d.ev);}
+    overRef.current=null;setDrag(null);
+  };
+  const handleDrop=(ev,key)=>{
+    const evDay=toDateKey(startOfDay(new Date(ev.start)));
+    if(key.startsWith("bucket:")){
+      const lvl=key.slice(7);
+      if(evDay!==selKey)onMoveDay(ev,selKey,lvl);else onSetLevel(ev.id,lvl);
+    }else if(key.startsWith("day:")){
+      const dk=key.slice(4);if(dk!==evDay)onMoveDay(ev,dk);setSelKey(dk);
+    }else if(key==="pool"){
+      if(evDay!==selKey)onMoveDay(ev,selKey,null);else onSetLevel(ev.id,null);
+    }
+  };
+
+  const moveInBucket=(arr,i,dir)=>{const j=i+dir;if(j<0||j>=arr.length)return;const a=[...arr];const t=a[i];a[i]=a[j];a[j]=t;onReorder(a.map((x)=>x.id));};
+
+  const Chip=({ev,idx,arr,bucketKey})=>{
+    const bu=ev.buId&&buMap[ev.buId]?buMap[ev.buId]:null;const s=new Date(ev.start);
+    return (
+      <div className={`gp-pchip ${ev.done?"done":""}`} onPointerDown={(e)=>onPointerDown(e,ev)} title="Trascina per spostare · tocca per aprire">
+        <div className={`gp-check ${ev.done?"on":""}`} onPointerDown={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();onToggle(ev);}}>{ev.done&&<Icon name="check" size={11} style={{color:"#fff"}}/>}</div>
+        <span className="pdot" style={{background:ev.color}}/>
+        <div className="pbody">
+          <span className="pttl">{ev.title}</span>
+          <span className="pmeta">{timeStr(s)}{bu&&<span className="pbu" style={{background:bu.color}}>{bu.name}</span>}</span>
+        </div>
+        {bucketKey&&<div className="gp-pmini" onPointerDown={(e)=>e.stopPropagation()}>
+          <button disabled={idx===0} title="Su" onClick={(e)=>{e.stopPropagation();moveInBucket(arr,idx,-1);}}><Icon name="up" size={13}/></button>
+          <button disabled={idx===arr.length-1} title="Giù" onClick={(e)=>{e.stopPropagation();moveInBucket(arr,idx,1);}}><Icon name="down" size={13}/></button>
+          <button className="danger" title="Togli dalla priorità" onClick={(e)=>{e.stopPropagation();onSetLevel(ev.id,null);}}><Icon name="x" size={13}/></button>
+        </div>}
+      </div>
+    );
+  };
+
+  const selLabel=`${WEEKDAYS[(selDay.getDay()+6)%7]} ${selDay.getDate()} ${MONTHS[selDay.getMonth()]}`;
+  const wkEnd=addDays(weekStart,6);
+  const wkLabel=weekStart.getMonth()===wkEnd.getMonth()
+    ? `${weekStart.getDate()}–${wkEnd.getDate()} ${MONTHS[weekStart.getMonth()].slice(0,3)}`
+    : `${weekStart.getDate()} ${MONTHS[weekStart.getMonth()].slice(0,3)} – ${wkEnd.getDate()} ${MONTHS[wkEnd.getMonth()].slice(0,3)}`;
+
+  return (
+    <div className="gp-panel" style={{padding:"16px"}}>
+      <div className="gp-pw-head">
+        <span className="gp-pw-title">Settimana</span>
+        <div className="gp-nav">
+          <button onClick={()=>setWeekStart((w)=>addDays(w,-7))}><Icon name="left"/></button>
+          <button className="today" onClick={()=>{setWeekStart(startOfWeek(new Date()));setSelKey(toDateKey(new Date()));}}>Questa settimana</button>
+          <button onClick={()=>setWeekStart((w)=>addDays(w,7))}><Icon name="right"/></button>
+        </div>
+        <span style={{fontWeight:800,color:"#8A7A6D",fontSize:13}}>{wkLabel}</span>
+      </div>
+
+      <div className="gp-daychips">
+        {weekDays.map((d)=>{const k=toDateKey(d);const c=countFor(d);const isOver=drag&&drag.over===`day:${k}`;
+          return (<button key={k} data-drop={`day:${k}`} className={`gp-daychip ${k===selKey?"on":""} ${sameDay(d,new Date())?"today":""} ${isOver?"is-drop":""}`} onClick={()=>setSelKey(k)}>
+            <span className="wd">{WEEKDAYS[(d.getDay()+6)%7]}</span>
+            <span className="dn">{d.getDate()}</span>
+            <span className="cb">{c>0?`${c} att.`:""}</span>
+          </button>);})}
+      </div>
+
+      {overdue.length>0 && (
+        <div className={`gp-late ${drag&&drag.over==="pool"?"":""}`}>
+          <div className="gp-late-h"><Icon name="flag" size={15}/> In ritardo<span className="badge">{overdue.length}</span></div>
+          <div className="gp-late-hint">Trascina un'attività su un giorno qui sopra per riprogrammarla.</div>
+          <div className="gp-late-list">
+            {overdue.map((ev)=>{const e=new Date(ev.end);
+              return (<div key={ev.id} className="gp-late-chip" onPointerDown={(e2)=>onPointerDown(e2,ev)} title="Trascina su un giorno · tocca per aprire">
+                <span className="pdot" style={{background:ev.color}}/>{ev.title}
+                <span className="od">scad. {e.getDate()} {MONTHS[e.getMonth()].slice(0,3)}</span>
+              </div>);})}
+          </div>
+        </div>
+      )}
+
+      <div style={{fontWeight:800,color:"#5A4A3D",fontSize:14,margin:"2px 0 12px"}}>Riquadri di <span style={{color:"#C75D3A"}}>{selLabel}</span></div>
+
+      <div className="gp-buckets">
+        {PRI_LEVELS.map((L)=>{const items=bucket(L.key);const over=drag&&drag.over===`bucket:${L.key}`;const capOver=L.cap&&items.length>L.cap;
+          return (
+            <div key={L.key} className={`gp-bucket ${over?"is-drop":""}`} style={{"--bk":L.color}} data-drop={`bucket:${L.key}`}>
+              <div className="gp-bucket-h">
+                <span className="gp-bucket-dot" style={{background:L.color}}/>
+                <span className="gp-bucket-name">{L.name}</span>
+                <span className={`gp-bucket-cnt ${capOver?"over":""}`}>{L.cap?`${items.length}/${L.cap}`:items.length}</span>
+              </div>
+              <div className="gp-bucket-body">
+                {items.length===0
+                  ? <div className="gp-bucket-empty">Trascina qui un'attività</div>
+                  : items.map((ev,i)=><Chip key={ev.id} ev={ev} idx={i} arr={items} bucketKey={L.key}/>)}
+              </div>
+            </div>
+          );})}
+      </div>
+
+      <div className={`gp-pool ${drag&&drag.over==="pool"?"is-drop":""}`} data-drop="pool">
+        <div className="gp-pool-h"><Icon name="list" size={15}/> Da assegnare — {selLabel}<span className="badge">{pool.length}</span></div>
+        {pool.length===0
+          ? <div className="gp-bucket-empty" style={{borderColor:"#D8C7AC"}}>Tutte le attività di questo giorno hanno una priorità 🎉</div>
+          : <div className="gp-pool-list">{pool.map((ev)=><Chip key={ev.id} ev={ev}/>)}</div>}
+      </div>
+
+      {drag && <div className="gp-drag-ghost" style={{left:drag.x+14,top:drag.y+14}}>
+        <span className="dot" style={{background:drag.ev.color}}/><span className="t">{drag.ev.title}</span>
+      </div>}
     </div>
   );
 }
@@ -733,7 +1068,8 @@ function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete}){
           <div className={`gp-toggle ${draft.inCalendar!==false?"on":""}`} onClick={()=>set({inCalendar:draft.inCalendar===false})}><div className="sw"/><span className="txt">Nel calendario (Giorno · Settimana · Mese)</span></div>
           <div className={`gp-toggle ${draft.inGantt!==false?"on":""}`} onClick={()=>set({inGantt:draft.inGantt===false})}><div className="sw"/><span className="txt">Nel Gantt</span></div>
           <label className="gp-lbl"><Icon name="note" size={13} style={{marginRight:5}}/>Note</label>
-          <textarea className="gp-input gp-area" rows={3} placeholder="Dettagli, luogo, promemoria…" value={draft.note} onChange={(e)=>set({note:e.target.value})}/>
+          <RichNote key={draft.id||"new"} value={draft.note} onChange={(v)=>set({note:v})}/>
+          {draft._isNew && <Recurrence draft={draft} set={set}/>}
         </div>
         <div className="gp-modal-foot">
           {!draft._isNew?<button className="gp-btn ghost danger" onClick={()=>onDelete(draft.id)}><Icon name="trash" size={15}/> Elimina</button>:<span/>}
