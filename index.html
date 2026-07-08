@@ -340,6 +340,63 @@
   .gp-work .gp-cal{height:calc(100vh - 300px);min-height:360px}
   .gp-work .gp-month .gp-mgrid{min-height:calc(100vh - 340px)}
 
+  /* PLANNER a schede */
+  .gp-plsum{display:flex;align-items:center;gap:8px;font-size:13px;color:#8A7A6D;font-weight:600;margin:2px 2px 14px}
+  .gp-plsum b{color:#3A2E26}.gp-plsum .sep{opacity:.5}.gp-plsum .late b{color:#B4462F}
+  .gp-plgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;align-items:start}
+  .gp-plcard{background:#FFFDF8;border:1px solid #EAD9C4;border-left:4px solid #5B7DA8;border-radius:14px;padding:12px 13px;box-shadow:0 2px 10px rgba(90,74,61,.05)}
+  .gp-plcard.st-done{opacity:.72}
+  .gp-plhead{display:flex;align-items:flex-start;gap:9px}
+  .gp-plstatus{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;border-radius:20px;padding:5px 10px;font-size:11.5px;font-weight:800;letter-spacing:.2px}
+  .gp-plstatus.s-todo{background:#F1E9DB;color:#8A7A6D}
+  .gp-plstatus.s-doing{background:#FBEFD3;color:#A9781F}
+  .gp-plstatus.s-done{background:#E6F0DE;color:#5A7A4E}
+  .gp-pltitle{flex:1;text-align:left;background:none;border:none;cursor:pointer;font-family:'Fraunces',serif;font-weight:600;font-size:16px;line-height:1.3;color:#3A2E26;padding:2px 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:7px}
+  .gp-pltitle span.done{text-decoration:line-through;color:#A99C8D}
+  .gp-plsubc{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;color:#8A7A6D;background:#F1E9DB;border-radius:8px;padding:1px 7px}
+  .gp-pledit{flex-shrink:0;background:none;border:none;cursor:pointer;color:#B7A896;padding:3px;border-radius:8px}
+  .gp-pledit:hover{color:#C75D3A;background:#F7ECE0}
+  .gp-plmeta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:9px 0 0}
+  .gp-plprio{display:inline-flex;align-items:center;gap:5px;border:none;cursor:pointer;border-radius:8px;padding:4px 9px;font-size:11.5px;font-weight:800}
+  .gp-plprio.p-alta{background:#F7E0D8;color:#B4462F}
+  .gp-plprio.p-media{background:#FBEFD3;color:#9A6B1E}
+  .gp-plprio.p-bassa{background:#E9F0E2;color:#5E7E52}
+  .gp-plprio.p-none{background:#F1E9DB;color:#A99C8D}
+  .gp-pldue{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:#8A7A6D}
+  .gp-pldue.d-late{color:#B4462F}.gp-pldue.d-soon{color:#C1741F}
+  .gp-plnote{margin-top:9px;font-size:12.5px;line-height:1.45;color:#7A6B5D;background:#FBF5EC;border-radius:9px;padding:7px 9px;white-space:pre-wrap;word-break:break-word}
+  .gp-plsubs{margin-top:10px;display:flex;flex-direction:column;gap:2px}
+  .gp-plsub{display:flex;align-items:center;gap:8px;padding:3px 2px;font-size:13px;color:#4A3E34}
+  .gp-plsub .t{flex:1;line-height:1.35}
+  .gp-plsub.done .t{text-decoration:line-through;color:#A99C8D}
+  .gp-check.sm{width:18px;height:18px;border-radius:6px;flex-shrink:0}
+  .gp-plsubdel{opacity:0;background:none;border:none;cursor:pointer;color:#C4B5A3;padding:2px;border-radius:6px;transition:opacity .12s}
+  .gp-plsub:hover .gp-plsubdel{opacity:1}.gp-plsubdel:hover{color:#B4462F;background:#F7ECE0}
+  .gp-plsubadd{display:flex;align-items:center;gap:6px;margin-top:9px}
+  .gp-input.sm{padding:7px 10px;font-size:13px;border-radius:9px}
+  .gp-btn.sm{padding:7px 10px;font-size:12.5px}
+  .gp-plsubtrig{margin-top:9px;background:none;border:1px dashed #DDCBB4;cursor:pointer;color:#9A8A7B;font-size:12px;font-weight:700;border-radius:9px;padding:6px 10px;display:inline-flex;align-items:center;gap:5px}
+  .gp-plsubtrig:hover{border-color:#C75D3A;color:#C75D3A}
+  .gp-pldone-tog{margin:16px 0 10px;background:none;border:none;cursor:pointer;color:#8A7A6D;font-size:13px;font-weight:800;display:inline-flex;align-items:center;gap:6px}
+  .gp-pldone-tog:hover{color:#3A2E26}
+  /* editor: stato/priorità/sotto-attività */
+  .gp-statusseg{display:flex;gap:6px}
+  .gp-statusseg button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;border:1px solid #E7D8C6;background:#FFFDF8;border-radius:10px;padding:8px 6px;font-size:12px;font-weight:700;color:#8A7A6D;cursor:pointer}
+  .gp-statusseg button.on.st-todo{background:#F1E9DB;color:#6E5F51;border-color:#DCCBB4}
+  .gp-statusseg button.on.st-doing{background:#FBEFD3;color:#A9781F;border-color:#EAD3A0}
+  .gp-statusseg button.on.st-done{background:#E6F0DE;color:#5A7A4E;border-color:#CBE0BC}
+  .gp-chip.pr-alta.on{border-color:#B4462F;background:#F7E0D8;color:#B4462F}
+  .gp-chip.pr-media.on{border-color:#9A6B1E;background:#FBEFD3;color:#9A6B1E}
+  .gp-chip.pr-bassa.on{border-color:#5E7E52;background:#E9F0E2;color:#5E7E52}
+  .gp-msubs{margin-top:4px}
+  .gp-msubs .gp-plsubdel{opacity:.55}
+  .gp-plonly{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;letter-spacing:.3px;color:#7B6A9A;background:#EDE8F5;border-radius:7px;padding:3px 7px}
+  .gp-warn{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:12px;font-weight:600;color:#9A6B1E;background:#FBEFD3;border:1px solid #EAD3A0;border-radius:9px;padding:8px 10px}
+  @media (max-width:680px){
+    .gp-plgrid{grid-template-columns:1fr}
+    .gp-plsubdel{opacity:1}
+  }
+
   @media (max-width:680px){
     .hide-sm{display:none}
     .gp-header{padding:12px 14px;gap:9px}
@@ -401,6 +458,9 @@ function layoutDay(evs){
 const DEFAULT_ACTIVITIES=[{name:"Lavoro",color:"#5B7DA8",dur:480},{name:"Studio",color:"#3E8E8A",dur:120},{name:"Palestra",color:"#C75D3A",dur:90},{name:"Pausa",color:"#D9A441",dur:30},{name:"Sonno",color:"#8E5B7D",dur:480}];
 const DEFAULT_BUS=[{name:"TDP",color:"#C75D3A"},{name:"Personal",color:"#7E9B6E"},{name:"Lavoro",color:"#5B7DA8"}];
 function detectWorkBu(bus){const w=bus.find((b)=>/lavoro|work|ufficio|italcer/i.test(b.name));return (w||bus[0]||null)?.id ?? null;}
+/* inPlanner è un campo nuovo: per gli eventi vecchi eredita il flag Gantt */
+const showInPlanner=(e)=>(e.inPlanner===undefined||e.inPlanner===null)?(e.inGantt!==false):(e.inPlanner!==false);
+const plannerOnly=(e)=>showInPlanner(e)&&e.inGantt===false&&e.inCalendar===false;
 
 /* ---- icone ---- */
 function Icon({name,size=18,style}){
@@ -429,6 +489,9 @@ function Icon({name,size=18,style}){
     case "archive":return <svg {...c}><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>;
     case "move":return <svg {...c}><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>;
     case "briefcase":return <svg {...c}><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
+    case "hourglass":return <svg {...c}><path d="M6 3h12M6 21h12M8 3v4a4 4 0 0 0 8 0V3M8 21v-4a4 4 0 0 1 8 0v4"/></svg>;
+    case "circle":return <svg {...c}><circle cx="12" cy="12" r="9"/></svg>;
+    case "edit":return <svg {...c}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>;
     default:return null;
   }
 }
@@ -504,7 +567,7 @@ function Scheduler({user}){
     return db.collection("events").doc(ev.id).update(patch);
   };
   const submitEvent=async(d)=>{
-    const base={activityId:d.activityId,buId:d.buId||null,title:(d.title.trim()||"Senza titolo"),color:d.color,note:d.note,done:!!d.done,inCalendar:d.inCalendar!==false,inGantt:d.inGantt!==false,priority:d.priority??null,priorityLevel:d.priorityLevel??null,uid:user.uid};
+    const base={activityId:d.activityId,buId:d.buId||null,title:(d.title.trim()||"Senza titolo"),color:d.color,note:d.note,done:!!d.done,inCalendar:d.inCalendar!==false,inGantt:d.inGantt!==false,inPlanner:d.inPlanner!==false,priority:d.priority??null,priorityLevel:d.priorityLevel??null,prio:d.prio??null,status:d.status||(d.done?"done":"todo"),subtasks:d.subtasks||[],uid:user.uid};
     const deltaDays=daysBetween(fromDateKey(d.startDate),fromDateKey(d.endDate));
     const mk=(dayKey)=>{const start=combine(dayKey,d.startTime);let end=combine(toDateKey(addDays(fromDateKey(dayKey),deltaDays)),d.endTime);if(end<=start)end=new Date(start.getTime()+30*60000);return {start:start.toISOString(),end:end.toISOString()};};
     if(d._isNew && d.repeat && d.repeat!=="none"){
@@ -523,7 +586,8 @@ function Scheduler({user}){
     }
     setEditing(null);
   };
-  const toggleDone=(ev)=>db.collection("events").doc(ev.id).update({done:!ev.done});
+  const toggleDone=(ev)=>db.collection("events").doc(ev.id).update({done:!ev.done,status:(!ev.done)?"done":"todo"});
+  const patchEvent=(id,patch)=>db.collection("events").doc(id).update(patch);
   const addReminder=(text,due)=>db.collection("reminders").add({text,due:due||"",done:false,createdAt:Date.now(),uid:user.uid});
   const updateReminder=(id,patch)=>db.collection("reminders").doc(id).update(patch);
   const deleteReminder=(id)=>db.collection("reminders").doc(id).delete();
@@ -559,12 +623,12 @@ function Scheduler({user}){
   const defaultBu=()=>buFilter!=="all"&&buFilter!==NOBU?buFilter:null;
   const newEventAt=(dateKey,hour,minute=0,activity=null)=>{
     const endMin=minute+(activity?.dur??60);let eh=hour+Math.floor(endMin/60),em=endMin%60;if(eh>=24){eh=23;em=59;}
-    setEditing({id:null,activityId:activity?.id??null,buId:activity?.buId??defaultBu(),title:activity?.name??"",color:activity?.color??PALETTE[0],startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:true,inGantt:true,priority:null,priorityLevel:null,repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
+    setEditing({id:null,activityId:activity?.id??null,buId:activity?.buId??defaultBu(),title:activity?.name??"",color:activity?.color??PALETTE[0],startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:true,inGantt:true,inPlanner:true,priority:null,priorityLevel:null,prio:null,status:"todo",subtasks:[],repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
   };
-  const openEvent=(ev)=>{const s=new Date(ev.start),e=new Date(ev.end);setEditing({id:ev.id,activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,startDate:toDateKey(s),startTime:timeStr(s),endDate:toDateKey(e),endTime:timeStr(e),note:ev.note||"",done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,priority:ev.priority??null,priorityLevel:ev.priorityLevel??null,_isNew:false});};
-  const newEventWithBu=(dateKey,hour,minute=0,buId=null,dur=60)=>{
+  const openEvent=(ev)=>{const s=new Date(ev.start),e=new Date(ev.end);setEditing({id:ev.id,activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,startDate:toDateKey(s),startTime:timeStr(s),endDate:toDateKey(e),endTime:timeStr(e),note:ev.note||"",done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,inPlanner:showInPlanner(ev),priority:ev.priority??null,priorityLevel:ev.priorityLevel??null,prio:ev.prio??null,status:ev.status||(ev.done?"done":"todo"),subtasks:ev.subtasks||[],_isNew:false});};
+  const newEventWithBu=(dateKey,hour,minute=0,buId=null,dur=60,opts={})=>{
     const endMin=minute+dur;let eh=hour+Math.floor(endMin/60),em=endMin%60;if(eh>=24){eh=23;em=59;}
-    setEditing({id:null,activityId:null,buId:buId||null,title:"",color:(buId&&buMap[buId]?buMap[buId].color:PALETTE[4]),startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:true,inGantt:true,priority:null,priorityLevel:null,repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
+    setEditing({id:null,activityId:null,buId:buId||null,title:"",color:(buId&&buMap[buId]?buMap[buId].color:PALETTE[4]),startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:opts.plannerOnly?false:true,inGantt:opts.plannerOnly?false:true,inPlanner:true,priority:null,priorityLevel:null,prio:null,status:"todo",subtasks:[],repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
   };
 
   const VIEWS=[["day","Giorno","calendar"],["week","Settimana","calendar"],["month","Mese","grid"],["gantt","Gantt","gantt"],["lavoro","Lavoro","briefcase"],["priority","Priorità","flag"],["reminders","Promemoria","bell"],["archive","Archivio","archive"]];
@@ -597,7 +661,7 @@ function Scheduler({user}){
         {view==="gantt" &&
           <GanttView start={ganttStart} events={shown.filter((e)=>e.inGantt!==false)} bus={bus} buFilter={buFilter} onNew={()=>newEventAt(toDateKey(new Date()),9)} onEvent={openEvent} onToggle={toggleDone}/>}
         {view==="lavoro" &&
-          <WorkView events={events} bus={bus} buMap={buMap} workBuId={workBuId} setWorkBuId={setWorkBuId} onEvent={openEvent} onToggle={toggleDone} onNewWithBu={newEventWithBu} onManageBu={()=>setManage("bu")}/>}
+          <WorkView events={events} bus={bus} buMap={buMap} workBuId={workBuId} setWorkBuId={setWorkBuId} onEvent={openEvent} onToggle={toggleDone} onNewWithBu={newEventWithBu} onManageBu={()=>setManage("bu")} onPatch={patchEvent}/>}
         {view==="archive" &&
           <ArchiveView events={shown.filter((e)=>e.done)} buMap={buMap} onEvent={openEvent} onToggle={toggleDone} onDelete={deleteEvent}/>}
         {view==="priority" &&
@@ -738,8 +802,8 @@ function GanttView({start,events,bus,buFilter,onNew,onEvent,onToggle}){
 }
 
 /* ---- Sezione Lavoro: calendario + Gantt dedicati ---- */
-function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewWithBu,onManageBu}){
-  const [sub,setSub]=useState("month");            // month | week | gantt
+function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewWithBu,onManageBu,onPatch}){
+  const [sub,setSub]=useState("planner");          // planner | month | week | gantt
   const [cursor,setCursor]=useState(()=>startOfDay(new Date()));
   const [gStart,setGStart]=useState(()=>startOfWeek(new Date()));
 
@@ -766,16 +830,16 @@ function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewW
   },[sub,cursor,weekDays,gStart]);
 
   const newHour=Math.min(23,Math.max(new Date().getHours(),8));
-  const addWork=()=>onNewWithBu(toDateKey(sub==="gantt"?new Date():cursor),9,0,workBuId,60);
+  const addWork=()=>onNewWithBu(toDateKey(sub==="month"||sub==="week"?cursor:new Date()),9,0,workBuId,60,sub==="planner"?{plannerOnly:true}:{});
 
-  const SUBS=[["month","Mese","grid"],["week","Settimana","calendar"],["gantt","Gantt","gantt"]];
+  const SUBS=[["planner","Planner","list"],["month","Mese","grid"],["week","Settimana","calendar"],["gantt","Gantt","gantt"]];
 
   return (
     <div className="gp-work">
       <div className="gp-worktop">
         <div className="gp-worktitle"><span className="gp-workbadge" style={{background:workColor}}><Icon name="briefcase" size={16} style={{color:"#fff"}}/></span>Lavoro</div>
         <div className="gp-seg">{SUBS.map(([v,lbl,ic])=>(<button key={v} className={sub===v?"on":""} onClick={()=>setSub(v)}><Icon name={ic} size={14}/> <span className="hide-sm">{lbl}</span></button>))}</div>
-        <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>
+        {sub!=="planner" && <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>}
         <select className="gp-select" value={workBuId||""} onChange={(e)=>setWorkBuId(e.target.value||null)} title="Quale Business Unit conta come Lavoro">
           {bus.map((b)=><option key={b.id} value={b.id}>{b.name}</option>)}
           <option value="">Senza BU</option>
@@ -783,7 +847,7 @@ function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewW
         <button className="gp-btn solid sm" onClick={addWork}><Icon name="plus" size={15}/> <span className="hide-sm">Nuovo</span></button>
       </div>
 
-      <div className="gp-worksub">{label}</div>
+      {sub!=="planner" && <div className="gp-worksub">{label}</div>}
 
       <div className="gp-gantt-kpis">
         <div className="gp-kpi"><div className="klabel">Totali</div><div className="kval">{total}</div></div>
@@ -795,6 +859,8 @@ function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewW
       {bus.length===0 ? (
         <div className="gp-panel"><div className="gp-empty">Non hai ancora Business Unit. Creane una chiamata “Lavoro” per popolare questa sezione.<br/><button className="gp-btn ghost sm" style={{marginTop:12}} onClick={onManageBu}><Icon name="settings" size={14}/> Gestisci Business Unit</button></div></div>
       ) : (<>
+        {sub==="planner" &&
+          <PlannerView events={workEvents.filter(showInPlanner)} color={workColor} onEvent={onEvent} onPatch={onPatch} onNew={()=>onNewWithBu(toDateKey(new Date()),9,0,workBuId,60,{plannerOnly:true})}/>}
         {sub==="month" &&
           <div className="gp-panel gp-month"><MonthView cursor={cursor} events={workEvents.filter((e)=>e.inCalendar!==false)} buMap={buMap} onDay={(k)=>onNewWithBu(k,9,0,workBuId,60)} onEvent={onEvent}/></div>}
         {sub==="week" &&
@@ -841,6 +907,101 @@ function WorkGanttRows({start,events,color,onEvent,onToggle}){
       </div>
     );
   })}</>);
+}
+
+/* ---- Planner a schede (stile TASK PLANNER) ---- */
+function dueInfo(endISO){
+  const today=startOfDay(new Date());
+  const d=startOfDay(new Date(endISO));
+  const delta=Math.round((d-today)/86400000);
+  const date=`${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3).toLowerCase()}`;
+  let phrase,tone;
+  if(delta<0){phrase=`in ritardo di ${-delta} g${-delta===1?"":"g"}`;tone="late";}
+  else if(delta===0){phrase="scade oggi";tone="soon";}
+  else if(delta===1){phrase="domani";tone="soon";}
+  else if(delta<=3){phrase=`fra ${delta} gg`;tone="soon";}
+  else{phrase=`fra ${delta} gg`;tone="ok";}
+  return {date,phrase,tone,delta};
+}
+const stOf=(e)=>e.status||(e.done?"done":"todo");
+
+function PlannerView({events,color,onEvent,onPatch,onNew}){
+  const [showDone,setShowDone]=useState(false);
+  const today=startOfDay(new Date());
+  const pw={alta:0,media:1,bassa:2};
+  const active=events.filter((e)=>stOf(e)!=="done").sort((a,b)=>{
+    const da=startOfDay(new Date(a.end))-today, db=startOfDay(new Date(b.end))-today;
+    return da-db || ((pw[a.prio]??3)-(pw[b.prio]??3));
+  });
+  const done=events.filter((e)=>stOf(e)==="done").sort((a,b)=>new Date(b.end)-new Date(a.end));
+  const lateN=active.filter((e)=>startOfDay(new Date(e.end))<today).length;
+  return (
+    <div className="gp-planner">
+      <div className="gp-plsum">
+        <span><b>{events.length}</b> task</span><span className="sep">·</span>
+        <span><b>{active.length}</b> da fare</span>
+        {lateN>0&&<><span className="sep">·</span><span className="late"><b>{lateN}</b> in ritardo</span></>}
+      </div>
+      {events.length===0 ? (
+        <div className="gp-panel"><div className="gp-empty">Nessun task di lavoro.<br/><button className="gp-btn solid sm" style={{marginTop:12}} onClick={onNew}><Icon name="plus" size={14}/> Nuovo task</button></div></div>
+      ) : (<>
+        <div className="gp-plgrid">{active.map((ev)=><PlannerCard key={ev.id} ev={ev} color={color} onEvent={onEvent} onPatch={onPatch}/>)}</div>
+        {done.length>0&&<>
+          <button className="gp-pldone-tog" onClick={()=>setShowDone((s)=>!s)}><Icon name={showDone?"down":"right"} size={14}/> Completati ({done.length})</button>
+          {showDone&&<div className="gp-plgrid">{done.map((ev)=><PlannerCard key={ev.id} ev={ev} color={color} onEvent={onEvent} onPatch={onPatch}/>)}</div>}
+        </>}
+      </>)}
+    </div>
+  );
+}
+
+function PlannerCard({ev,color,onEvent,onPatch}){
+  const [adding,setAdding]=useState(false);
+  const [txt,setTxt]=useState("");
+  const st=stOf(ev);
+  const nextSt={todo:"doing",doing:"done",done:"todo"}[st];
+  const STM={todo:{ic:"circle",lbl:"Da fare"},doing:{ic:"hourglass",lbl:"In corso"},done:{ic:"check",lbl:"Fatto"}}[st];
+  const cyclePrio=(p)=>p==="alta"?"media":p==="media"?"bassa":p==="bassa"?null:"alta";
+  const subs=Array.isArray(ev.subtasks)?ev.subtasks:[];
+  const subDone=subs.filter((s)=>s.done).length;
+  const di=dueInfo(ev.end);
+  const notePreview=(ev.note||"").replace(/<[^>]*>/g," ").replace(/&nbsp;/g," ").replace(/&amp;/g,"&").replace(/\s+/g," ").trim();
+  const setStatus=()=>onPatch(ev.id,{status:nextSt,done:nextSt==="done"});
+  const setPrio=()=>onPatch(ev.id,{prio:cyclePrio(ev.prio||null)});
+  const toggleSub=(id)=>onPatch(ev.id,{subtasks:subs.map((s)=>s.id===id?{...s,done:!s.done}:s)});
+  const delSub=(id)=>onPatch(ev.id,{subtasks:subs.filter((s)=>s.id!==id)});
+  const addSub=()=>{const t=txt.trim();if(!t)return;onPatch(ev.id,{subtasks:[...subs,{id:"st-"+Date.now()+Math.random().toString(36).slice(2,5),text:t,done:false}]});setTxt("");};
+  return (
+    <div className={`gp-plcard st-${st}`} style={{borderLeftColor:color}}>
+      <div className="gp-plhead">
+        <button className={`gp-plstatus s-${st}`} onClick={setStatus} title="Tocca per cambiare stato"><Icon name={STM.ic} size={15}/><span className="hide-sm">{STM.lbl}</span></button>
+        <button className="gp-pltitle" onClick={()=>onEvent(ev)}><span className={st==="done"?"done":""}>{ev.title}</span>{subs.length>0&&<span className="gp-plsubc">{subDone}/{subs.length}</span>}</button>
+        <button className="gp-pledit" onClick={()=>onEvent(ev)} title="Modifica"><Icon name="edit" size={15}/></button>
+      </div>
+      <div className="gp-plmeta">
+        <button className={`gp-plprio p-${ev.prio||"none"}`} onClick={setPrio} title="Tocca per cambiare priorità"><Icon name="flag" size={11}/>{ev.prio?{alta:"Alta",media:"Media",bassa:"Bassa"}[ev.prio]:"Priorità"}</button>
+        <span className={`gp-pldue d-${di.tone}`}><Icon name="calendar" size={11}/>{di.date} · {di.phrase}</span>
+        {plannerOnly(ev)&&<span className="gp-plonly" title="Non compare in calendario né nel Gantt"><Icon name="list" size={10}/> solo planner</span>}
+      </div>
+      {notePreview&&<div className="gp-plnote">{notePreview}</div>}
+      {subs.length>0&&<div className="gp-plsubs">{subs.map((s)=>(
+        <div key={s.id} className={`gp-plsub ${s.done?"done":""}`}>
+          <button className={`gp-check sm ${s.done?"on":""}`} onClick={()=>toggleSub(s.id)}>{s.done&&<Icon name="check" size={10} style={{color:"#fff"}}/>}</button>
+          <span className="t">{s.text}</span>
+          <button className="gp-plsubdel" onClick={()=>delSub(s.id)} title="Rimuovi"><Icon name="x" size={12}/></button>
+        </div>
+      ))}</div>}
+      {adding?(
+        <div className="gp-plsubadd">
+          <input autoFocus className="gp-input sm" value={txt} placeholder="Nuova sotto-attività…" onChange={(e)=>setTxt(e.target.value)} onKeyDown={(e)=>{if(e.key==="Enter")addSub();if(e.key==="Escape"){setAdding(false);setTxt("");}}}/>
+          <button className="gp-btn solid sm" onClick={addSub}><Icon name="check" size={14}/></button>
+          <button className="gp-btn ghost sm" onClick={()=>{setAdding(false);setTxt("");}}><Icon name="x" size={14}/></button>
+        </div>
+      ):(
+        <button className="gp-plsubtrig" onClick={()=>setAdding(true)}><Icon name="plus" size={12}/> Sotto-attività</button>
+      )}
+    </div>
+  );
 }
 
 /* ---- Editor note formattate (stile Note) ---- */
@@ -922,9 +1083,10 @@ function PriorityView({events,workEvents,workBuId,bus,buMap,onEvent,onToggle,onR
   // mantieni il giorno selezionato dentro la settimana mostrata
   useEffect(()=>{const inWeek=weekDays.some((d)=>toDateKey(d)===selKey);if(!inWeek)setSelKey(toDateKey(weekDays[0]));},[weekStart]);
 
-  const onDay=(d)=>{const ws=startOfDay(d),we=addDays(ws,1);return viewEvents.filter((ev)=>ev.inGantt!==false&&new Date(ev.end)>ws&&new Date(ev.start)<we);};
+  const inBoard=(ev)=>ev.inGantt!==false||showInPlanner(ev);
+  const onDay=(d)=>{const ws=startOfDay(d),we=addDays(ws,1);return viewEvents.filter((ev)=>inBoard(ev)&&new Date(ev.end)>ws&&new Date(ev.start)<we);};
   const selEvents=onDay(selDay).sort((a,b)=>{const pa=a.priority??9999,pb=b.priority??9999;return pa-pb||new Date(a.start)-new Date(b.start);});
-  const overdue=viewEvents.filter((ev)=>ev.inGantt!==false&&!ev.done&&startOfDay(new Date(ev.end))<today)
+  const overdue=viewEvents.filter((ev)=>inBoard(ev)&&!ev.done&&startOfDay(new Date(ev.end))<today)
     .sort((a,b)=>new Date(a.end)-new Date(b.end));
   const bucket=(k)=>selEvents.filter((e)=>(e.priorityLevel||null)===k);
   const pool=selEvents.filter((e)=>!e.priorityLevel);
@@ -1255,6 +1417,29 @@ function ManageDrawer({tab,setTab,activities,bus,buMap,onClose,onUpsertAct,onRem
 }
 
 /* ---- Modal evento ---- */
+function ModalSubtasks({items,onChange}){
+  const [txt,setTxt]=useState("");
+  const list=Array.isArray(items)?items:[];
+  const add=()=>{const t=txt.trim();if(!t)return;onChange([...list,{id:"st-"+Date.now()+Math.random().toString(36).slice(2,5),text:t,done:false}]);setTxt("");};
+  const toggle=(id)=>onChange(list.map((s)=>s.id===id?{...s,done:!s.done}:s));
+  const del=(id)=>onChange(list.filter((s)=>s.id!==id));
+  return (
+    <div className="gp-msubs">
+      {list.map((s)=>(
+        <div key={s.id} className={`gp-plsub ${s.done?"done":""}`}>
+          <button className={`gp-check sm ${s.done?"on":""}`} onClick={()=>toggle(s.id)}>{s.done&&<Icon name="check" size={10} style={{color:"#fff"}}/>}</button>
+          <span className="t">{s.text}</span>
+          <button className="gp-plsubdel" onClick={()=>del(s.id)}><Icon name="x" size={12}/></button>
+        </div>
+      ))}
+      <div className="gp-plsubadd">
+        <input className="gp-input sm" value={txt} placeholder="Aggiungi sotto-attività…" onChange={(e)=>setTxt(e.target.value)} onKeyDown={(e)=>{if(e.key==="Enter"){e.preventDefault();add();}}}/>
+        <button className="gp-btn solid sm" onClick={add}><Icon name="plus" size={14}/></button>
+      </div>
+    </div>
+  );
+}
+
 function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete}){
   const set=(p)=>onChange({...draft,...p});
   const multiDay=draft.startDate!==draft.endDate;
@@ -1280,12 +1465,35 @@ function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete}){
           </div>
           <label className="gp-lbl">Colore</label>
           <Swatches value={draft.color} onPick={(c)=>set({color:c})}/>
-          <div className={`gp-toggle ${draft.done?"on":""}`} onClick={()=>set({done:!draft.done})}><div className="sw"/><span className="txt">{draft.done?"Completata":"Da fare"}</span></div>
+          <div className="gp-row2">
+            <div>
+              <label className="gp-lbl">Stato</label>
+              <div className="gp-statusseg">
+                {[["todo","Da fare","circle"],["doing","In corso","hourglass"],["done","Fatto","check"]].map(([v,lbl,ic])=>{
+                  const cur=draft.status||(draft.done?"done":"todo");
+                  return <button key={v} className={`st-${v} ${cur===v?"on":""}`} onClick={()=>set({status:v,done:v==="done"})}><Icon name={ic} size={14}/> {lbl}</button>;
+                })}
+              </div>
+            </div>
+            <div>
+              <label className="gp-lbl">Priorità</label>
+              <div className="gp-chips">
+                {[["alta","Alta"],["media","Media"],["bassa","Bassa"]].map(([v,lbl])=>(
+                  <button key={v} className={`gp-chip pr-${v} ${draft.prio===v?"on":""}`} onClick={()=>set({prio:draft.prio===v?null:v})}><Icon name="flag" size={11}/> {lbl}</button>
+                ))}
+              </div>
+            </div>
+          </div>
           <label className="gp-lbl">Dove farla comparire</label>
           <div className={`gp-toggle ${draft.inCalendar!==false?"on":""}`} onClick={()=>set({inCalendar:draft.inCalendar===false})}><div className="sw"/><span className="txt">Nel calendario (Giorno · Settimana · Mese)</span></div>
           <div className={`gp-toggle ${draft.inGantt!==false?"on":""}`} onClick={()=>set({inGantt:draft.inGantt===false})}><div className="sw"/><span className="txt">Nel Gantt</span></div>
+          <div className={`gp-toggle ${draft.inPlanner!==false?"on":""}`} onClick={()=>set({inPlanner:draft.inPlanner===false})}><div className="sw"/><span className="txt">Nel Planner (sezione Lavoro)</span></div>
+          {draft.inCalendar===false&&draft.inGantt===false&&draft.inPlanner===false&&
+            <div className="gp-warn"><Icon name="flag" size={13}/> Con tutti gli interruttori spenti il task non comparirà da nessuna parte.</div>}
           <label className="gp-lbl"><Icon name="note" size={13} style={{marginRight:5}}/>Note</label>
           <RichNote key={draft.id||"new"} value={draft.note} onChange={(v)=>set({note:v})}/>
+          <label className="gp-lbl"><Icon name="list" size={13} style={{marginRight:5}}/>Sotto-attività</label>
+          <ModalSubtasks items={draft.subtasks||[]} onChange={(s)=>set({subtasks:s})}/>
           {draft._isNew && <Recurrence draft={draft} set={set}/>}
         </div>
         <div className="gp-modal-foot">
