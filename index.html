@@ -173,6 +173,7 @@
   .gp-rtext{flex:1;min-width:0;font-weight:700;font-size:14px;cursor:text;word-break:break-word}
   .gp-rtext.done{text-decoration:line-through;color:#A89683}
   .gp-rrow .gp-input{flex:1;padding:6px 10px}
+  .gp-rbody{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
   .gp-rdue{font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;background:#EADFCB;color:#7A6A5C;white-space:nowrap}
   .gp-rdue.late{background:#F8E9E9;color:#9E4444}
   .gp-rdue.today{background:#FCEDE5;color:#C75D3A}
@@ -226,18 +227,18 @@
   .gp-late-hint{font-size:11.5px;font-weight:700;color:#B47A7A;margin-bottom:9px}
   .gp-late-list{display:flex;flex-wrap:wrap;gap:8px}
 
-  .gp-buckets{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-  .gp-bucket{border:1.5px solid #E4D7C2;background:#FFFDF8;border-radius:16px;padding:13px;display:flex;flex-direction:column;min-height:120px;transition:.15s}
+  .gp-buckets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .gp-bucket{min-width:0;border:1.5px solid #E4D7C2;background:#FFFDF8;border-radius:16px;padding:13px;display:flex;flex-direction:column;min-height:120px;transition:.15s}
   .gp-bucket.is-drop{border-color:var(--bk,#C75D3A);border-style:dashed;background:#FFF9F1}
   .gp-bucket-h{display:flex;align-items:center;gap:8px;margin-bottom:11px}
   .gp-bucket-dot{width:13px;height:13px;border-radius:5px;flex-shrink:0}
   .gp-bucket-name{font-weight:800;font-size:14px;color:#3A2E26}
   .gp-bucket-cnt{margin-left:auto;font-size:11px;font-weight:800;color:#A89683;background:#F0E7D6;border-radius:20px;padding:2px 9px}
   .gp-bucket-cnt.over{background:#F8E9E9;color:#9E4444}
-  .gp-bucket-body{display:flex;flex-direction:column;gap:8px;flex:1}
+  .gp-bucket-body{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
   .gp-bucket-empty{font-size:12px;font-weight:700;color:#C2B4A0;text-align:center;padding:14px 6px;border:1.5px dashed #E4D7C2;border-radius:11px}
 
-  .gp-pchip{display:flex;align-items:center;gap:9px;background:#FFFDF8;border:1px solid #E4D7C2;border-radius:11px;padding:8px 10px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 1px 3px rgba(90,74,61,.06);transition:box-shadow .12s}
+  .gp-pchip{min-width:0;display:flex;align-items:center;gap:9px;background:#FFFDF8;border:1px solid #E4D7C2;border-radius:11px;padding:8px 10px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 1px 3px rgba(90,74,61,.06);transition:box-shadow .12s}
   .gp-pchip:active{cursor:grabbing}
   .gp-pchip .pdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
   .gp-pchip .pbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
@@ -270,7 +271,7 @@
   .gp-sheet-h .pdot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
   .gp-sheet-h .nm{font-weight:800;font-size:16px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .gp-sheet-sub{font-size:11.5px;font-weight:800;color:#8A7A6D;text-transform:uppercase;letter-spacing:.4px;margin:16px 0 9px}
-  .gp-lvlgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .gp-lvlgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px}
   .gp-lvlbtn{display:flex;align-items:center;gap:9px;border:1.5px solid #E4D7C2;background:#FFFDF8;border-radius:13px;padding:13px 12px;cursor:pointer;font-family:inherit;font-weight:800;font-size:13.5px;color:#3A2E26;text-align:left;transition:.13s}
   .gp-lvlbtn .d{width:14px;height:14px;border-radius:5px;flex-shrink:0}
   .gp-lvlbtn:hover{background:#F4ECDF}
@@ -285,7 +286,7 @@
   .gp-pool.is-drop{border-color:#C75D3A;border-style:dashed;background:#FFF6ED}
   .gp-pool-h{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:#8A7A6D;margin-bottom:11px}
   .gp-pool-h .badge{margin-left:auto;background:#EADFCB;color:#7A6A5C;border-radius:20px;padding:1px 9px;font-size:11px}
-  .gp-pool-list{display:flex;flex-direction:column;gap:8px}
+  .gp-pool-list{display:flex;flex-direction:column;gap:8px;min-width:0}
 
   .gp-drag-ghost{position:fixed;z-index:999;pointer-events:none;display:flex;align-items:center;gap:8px;background:#FFFDF8;border:1.5px solid #C75D3A;border-radius:11px;padding:8px 12px;font-weight:800;font-size:13.5px;box-shadow:0 12px 30px rgba(58,46,38,.28);max-width:240px;color:#3A2E26}
   .gp-drag-ghost .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
@@ -332,7 +333,7 @@
   .gp-input{width:100%;border:1px solid #E0D2BC;background:#FFFDF8;border-radius:10px;padding:10px 12px;font-size:14px;font-family:'Nunito',sans-serif;color:#3A2E26;outline:none;transition:.15s}
   .gp-input:focus{border-color:#C75D3A;box-shadow:0 0 0 3px rgba(199,93,58,.13)}
   .gp-area{resize:vertical;line-height:1.5}
-  .gp-row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .gp-row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
   .gp-datetime{display:flex;gap:6px}
   .gp-datetime .gp-input{padding:9px 8px;font-size:13px}
   .gp-chips{display:flex;flex-wrap:wrap;gap:7px}
@@ -365,7 +366,8 @@
   /* PLANNER a schede */
   .gp-plsum{display:flex;align-items:center;gap:8px;font-size:13px;color:#8A7A6D;font-weight:600;margin:2px 2px 14px}
   .gp-plsum b{color:#3A2E26}.gp-plsum .sep{opacity:.5}.gp-plsum .late b{color:#B4462F}
-  .gp-plgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;align-items:start}
+  .gp-plgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:12px;align-items:start}
+  .gp-plcard{min-width:0}
   .gp-plcard{background:#FFFDF8;border:1px solid #EAD9C4;border-left:4px solid #5B7DA8;border-radius:14px;padding:12px 13px;box-shadow:0 2px 10px rgba(90,74,61,.05)}
   .gp-plcard.st-done{opacity:.72}
   .gp-plhead{display:flex;align-items:flex-start;gap:9px}
@@ -415,7 +417,7 @@
   .gp-plonly{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;letter-spacing:.3px;color:#7B6A9A;background:#EDE8F5;border-radius:7px;padding:3px 7px}
   .gp-warn{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:12px;font-weight:600;color:#9A6B1E;background:#FBEFD3;border:1px solid #EAD3A0;border-radius:9px;padding:8px 10px}
   @media (max-width:680px){
-    .gp-plgrid{grid-template-columns:1fr}
+    .gp-plgrid{grid-template-columns:minmax(0,1fr)}
     .gp-plsubdel{opacity:1}
   }
 
@@ -447,7 +449,7 @@
     .gp-bottomnav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .gp-bottomnav button.on{color:#C75D3A;background:#FCEDE5}
 
-    .gp-wrap{padding:10px 10px 14px}
+    .gp-wrap{padding:10px 10px 14px;scrollbar-gutter:auto}
     .gp-fill{min-height:300px}
     .gp-fillcol{min-height:440px}
     .gp-pad{padding:12px}
@@ -498,13 +500,36 @@
     .gp-daychip{flex:1 1 0;min-width:0;padding:7px 2px;border-radius:11px}
     .gp-daychip .dn{font-size:16px}
     .gp-daychip .cb{font-size:9px}
-    .gp-buckets{grid-template-columns:1fr}
+    .gp-buckets{grid-template-columns:minmax(0,1fr);gap:10px}
+    .gp-bucket{min-height:0;padding:11px;border-radius:14px}
+    .gp-bucket-h{margin-bottom:9px}
+    .gp-bucket-empty{padding:9px 6px;font-size:11.5px}
+    .gp-pool{padding:11px;border-radius:14px;margin-top:10px}
+    .gp-pchip{padding:8px 8px;gap:8px;align-items:flex-start}
+    .gp-pchip .gp-check{margin-top:1px}
+    .gp-pchip .pdot{margin-top:5px}
+    .gp-pchip .pttl{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
+    .gp-pmini{align-self:center}
+    /* su cellulare niente "scatola nella scatola": il pannello esterno sparisce e le schede usano tutta la larghezza */
+    .gp-panel.gp-flat{background:none;border:none;box-shadow:none;padding:2px 0 0}
+    .gp-bucket.empty{padding:10px 11px}
+    .gp-bucket.empty .gp-bucket-body{display:none}
+    .gp-bucket.empty .gp-bucket-h{margin-bottom:0;opacity:.75}
     .gp-pmini button{width:32px;height:32px}
+    .gp-pmini button.accent{display:none}
+    .gp-pmini button:disabled{display:none}
+    .gp-late{padding:10px 11px;margin-bottom:12px}
+    .gp-late-list{flex-direction:column;gap:6px}
+    .gp-late-chip{width:100%}
+    .gp-late-chip .lt{flex:1}
+    .gp-pri-sel{font-size:13.5px}
 
     /* promemoria / archivio */
     .gp-radd .gp-input{flex:1 1 100%}
     .gp-radd .gp-rdate{flex:1 1 0;max-width:none;min-width:0}
     .gp-rrow{padding:9px 10px;gap:8px}
+    .gp-rbody{flex-direction:column;align-items:flex-start;gap:4px}
+    .gp-rbody .gp-input{width:100%}
     .gp-arch-row{padding:5px 10px}
     .gp-arch-main{min-width:0;padding:10px 11px}
     .gp-arch-bu{display:none}
@@ -1326,7 +1351,7 @@ function PriorityView({events,workEvents,workBuId,bus,buMap,onEvent,onToggle,onR
     : `${weekStart.getDate()} ${MONTHS[weekStart.getMonth()].slice(0,3)} – ${wkEnd.getDate()} ${MONTHS[wkEnd.getMonth()].slice(0,3)}`;
 
   return (
-    <div className="gp-panel gp-pad">
+    <div className="gp-panel gp-pad gp-flat">
       <div className="gp-pw-head">
         <span className="gp-pw-title">Settimana</span>
         <span className="gp-pw-lbl">{wkLabel}</span>
@@ -1345,7 +1370,7 @@ function PriorityView({events,workEvents,workBuId,bus,buMap,onEvent,onToggle,onR
 
       <div className="gp-tipbar">
         <Icon name="move" size={16} style={{flexShrink:0,color:"#C75D3A"}}/>
-        <span>Per assegnare una priorità <b>tocca un'attività</b>: si apre un menù dove scegli il riquadro o il giorno dove metterla. Da computer puoi anche <b>trascinarla</b> col mouse.</span>
+        <span className="hide-sm">Per assegnare una priorità <b>tocca un'attività</b>: si apre un menù dove scegli il riquadro o il giorno dove metterla. Da computer puoi anche <b>trascinarla</b> col mouse.</span><span className="show-sm"><b>Tocca un'attività</b> per scegliere priorità o giorno.</span>
       </div>
 
       <div className="gp-daychips">
@@ -1360,7 +1385,7 @@ function PriorityView({events,workEvents,workBuId,bus,buMap,onEvent,onToggle,onR
       {overdue.length>0 && (
         <div className={`gp-late ${drag&&drag.over==="pool"?"":""}`}>
           <div className="gp-late-h"><Icon name="flag" size={15}/> In ritardo<span className="badge">{overdue.length}</span></div>
-          <div className="gp-late-hint">Tocca un'attività e scegli il giorno (o trascinala su un giorno qui sopra) per riprogrammarla.</div>
+          <div className="gp-late-hint hide-sm">Tocca un'attività e scegli il giorno (o trascinala su un giorno qui sopra) per riprogrammarla.</div>
           <div className="gp-late-list">
             {overdue.map((ev)=>{const e=new Date(ev.end);
               return (<div key={ev.id} className="gp-late-chip" onPointerDown={(e2)=>onPointerDown(e2,ev)} onClick={()=>{if(justDragRef.current)return;setMenuEv(ev);}} title="Tocca per scegliere il giorno (o trascina col mouse)">
@@ -1372,12 +1397,12 @@ function PriorityView({events,workEvents,workBuId,bus,buMap,onEvent,onToggle,onR
         </div>
       )}
 
-      <div style={{fontWeight:800,color:"#5A4A3D",fontSize:14,margin:"2px 0 12px"}}>Riquadri di <span style={{color:"#C75D3A"}}>{selLabel}</span></div>
+      <div className="gp-pri-sel" style={{fontWeight:800,color:"#5A4A3D",fontSize:14,margin:"2px 0 12px"}}>Riquadri di <span style={{color:"#C75D3A"}}>{selLabel}</span></div>
 
       <div className="gp-buckets">
         {PRI_LEVELS.map((L)=>{const items=bucket(L.key);const over=drag&&drag.over===`bucket:${L.key}`;const capOver=L.cap&&items.length>L.cap;
           return (
-            <div key={L.key} className={`gp-bucket ${over?"is-drop":""}`} style={{"--bk":L.color}} data-drop={`bucket:${L.key}`}>
+            <div key={L.key} className={`gp-bucket ${over?"is-drop":""} ${items.length===0?"empty":""}`} style={{"--bk":L.color}} data-drop={`bucket:${L.key}`}>
               <div className="gp-bucket-h">
                 <span className="gp-bucket-dot" style={{background:L.color}}/>
                 <span className="gp-bucket-name">{L.name}</span>
@@ -1385,7 +1410,7 @@ function PriorityView({events,workEvents,workBuId,bus,buMap,onEvent,onToggle,onR
               </div>
               <div className="gp-bucket-body">
                 {items.length===0
-                  ? <div className="gp-bucket-empty">Trascina o tocca un'attività e scegli «{L.name}»</div>
+                  ? <div className="gp-bucket-empty"><span className="hide-sm">Trascina o tocca un'attività e scegli «{L.name}»</span><span className="show-sm">Vuoto</span></div>
                   : items.map((ev,i)=><Chip key={ev.id} ev={ev} idx={i} arr={items} bucketKey={L.key}/>)}
               </div>
             </div>
@@ -1460,10 +1485,12 @@ function ReminderView({reminders,onAdd,onUpdate,onDelete}){
   const Row=(r)=>(
     <div key={r.id} className="gp-rrow">
       <div className={`gp-check ${r.done?"on":""}`} onClick={()=>onUpdate(r.id,{done:!r.done})}>{r.done&&<Icon name="check" size={12} style={{color:"#fff"}}/>}</div>
-      {editId===r.id
-        ? <input className="gp-input" autoFocus value={editText} onChange={(e)=>setEditText(e.target.value)} onKeyDown={(e)=>e.key==="Enter"&&saveEdit(r)} onBlur={()=>saveEdit(r)}/>
-        : <span className={`gp-rtext ${r.done?"done":""}`} onClick={()=>{setEditId(r.id);setEditText(r.text);}}>{r.text}</span>}
-      {dueBadge(r)}
+      <div className="gp-rbody">
+        {editId===r.id
+          ? <input className="gp-input" autoFocus value={editText} onChange={(e)=>setEditText(e.target.value)} onKeyDown={(e)=>e.key==="Enter"&&saveEdit(r)} onBlur={()=>saveEdit(r)}/>
+          : <span className={`gp-rtext ${r.done?"done":""}`} onClick={()=>{setEditId(r.id);setEditText(r.text);}}>{r.text}</span>}
+        {dueBadge(r)}
+      </div>
       <button className="gp-icon sm danger" onClick={()=>onDelete(r.id)}><Icon name="trash" size={15}/></button>
     </div>
   );
