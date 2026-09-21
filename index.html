@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>Giornata</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,7 @@
   body{background:#F4ECDF;color:#3A2E26;font-family:'Nunito',sans-serif;-webkit-tap-highlight-color:transparent}
 
   .gp-center{height:100%;display:flex;align-items:center;justify-content:center;color:#8A7A6D;font-size:15px}
-  .gp-shell{min-height:100%;display:flex;flex-direction:column;background:#F4ECDF}
+  .gp-shell{height:100vh;height:100dvh;display:flex;flex-direction:column;background:#F4ECDF;overflow:hidden}
 
   /* LOGIN */
   .gp-login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(1200px 600px at 70% -10%,#FBEFE0 0%,#F4ECDF 55%)}
@@ -35,11 +35,21 @@
   .gp-switch button{background:none;border:none;color:#C75D3A;font-weight:800;cursor:pointer;font-size:13px}
 
   /* HEADER */
-  .gp-header{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 20px;background:rgba(247,241,232,.92);backdrop-filter:blur(10px);border-bottom:1px solid #E4D7C2}
-  .gp-brand{display:flex;align-items:center;gap:12px}
+  /* Header a due righe fisse: la posizione delle schede non dipende più da quali controlli sono visibili */
+  .gp-header{position:relative;z-index:30;flex-shrink:0;padding:12px 20px 10px;padding-top:calc(12px + env(safe-area-inset-top,0px));background:rgba(247,241,232,.96);border-bottom:1px solid #E4D7C2}
+  .gp-hrow{display:flex;align-items:center;gap:12px}
+  .gp-hrow + .gp-hrow{margin-top:10px}
+  .gp-brand{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+  .gp-brand > div:last-child{min-width:0}
+  .gp-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .gp-tabs-main{flex:1;min-width:0;overflow-x:auto;padding:2px;scrollbar-width:none}
+  .gp-tabs-main::-webkit-scrollbar{display:none}
+  .gp-tabs-main .gp-seg{width:max-content}
+  .gp-tools{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .show-sm{display:none}
   .gp-logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#FFF8EC;font-family:'Fraunces',serif;font-weight:600;font-size:24px;background:linear-gradient(140deg,#C75D3A,#A8552E);box-shadow:0 4px 14px rgba(199,93,58,.3)}
   .gp-title{font-family:'Fraunces',serif;font-weight:600;font-size:23px;letter-spacing:-.3px;line-height:1}
-  .gp-sub{font-size:12.5px;color:#8A7A6D;font-weight:600;margin-top:3px}
+  .gp-sub{font-size:12.5px;color:#8A7A6D;font-weight:600;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .gp-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 
   .gp-seg{display:flex;background:#EADFCB;border-radius:11px;padding:3px}
@@ -67,11 +77,16 @@
   .gp-btn:disabled{opacity:.5;cursor:not-allowed}
 
   /* AREA CONTENUTO */
-  .gp-wrap{flex:1;padding:16px 20px 24px;min-height:0}
+  /* L'area contenuti è l'unico contenitore che scorre: la barra di scorrimento ha sempre il suo spazio riservato, così la pagina non si sposta cambiando sezione */
+  .gp-wrap{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;display:flex;flex-direction:column;padding:16px 20px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .gp-fill{flex:1 1 0;min-height:360px;display:flex;flex-direction:column}
+  .gp-fillcol{flex:1 1 0;min-height:520px;display:flex;flex-direction:column}
+  .gp-fillcol > .gp-fill{min-height:0}
+  .gp-pad{padding:16px}
   .gp-panel{background:#FFFDF8;border:1px solid #E4D7C2;border-radius:16px;box-shadow:0 8px 30px rgba(90,74,61,.06)}
 
   /* CALENDARIO GIORNO/SETTIMANA */
-  .gp-cal{height:calc(100vh - 150px);min-height:420px;overflow:auto}
+  .gp-cal{flex:1;min-height:0;overflow:auto}
   .gp-weekhead{position:sticky;top:0;z-index:12;display:grid;background:#FFFDF8;border-bottom:1px solid #EADFCB}
   .gp-wh{padding:9px 4px;text-align:center;border-left:1px solid #F0E7D6}
   .gp-wh .wd{display:block;font-size:11px;font-weight:700;color:#8A7A6D;text-transform:uppercase;letter-spacing:.5px}
@@ -97,9 +112,10 @@
 
   /* MESE */
   .gp-month{padding:0}
-  .gp-mhead{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid #EADFCB}
+  .gp-mhead{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-bottom:1px solid #EADFCB;flex-shrink:0}
   .gp-mhead div{padding:10px 6px;text-align:center;font-size:11px;font-weight:800;color:#8A7A6D;text-transform:uppercase;letter-spacing:.5px}
-  .gp-mgrid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;min-height:calc(100vh - 210px)}
+  .gp-mroot{flex:1;min-height:0;display:flex;flex-direction:column}
+  .gp-mgrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:minmax(96px,1fr)}
   .gp-mcell{border-left:1px solid #F0E7D6;border-bottom:1px solid #F0E7D6;padding:6px;min-height:96px;cursor:copy;display:flex;flex-direction:column;gap:3px;overflow:hidden}
   .gp-mcell:nth-child(7n+1){border-left:none}
   .gp-mcell.out{background:#FBF6EC}
@@ -118,8 +134,8 @@
   .gp-kpi .kval{font-family:'Fraunces',serif;font-weight:600;font-size:30px;margin-top:4px;line-height:1}
   .gp-kpi.late .kval{color:#9E4444}
   .gp-kpi.done .kval{color:#4A7058}
-  .gp-gantt{overflow:auto;max-height:calc(100vh - 280px)}
-  .gp-gantt-inner{min-width:max-content}
+  .gp-gantt{overflow:auto}
+  .gp-gantt-inner{min-width:max-content;flex-shrink:0}
   .gp-grow{display:flex;align-items:stretch;border-bottom:1px solid #F4ECDE}
   .gp-glabel{width:230px;min-width:230px;padding:7px 12px;display:flex;align-items:center;gap:8px;position:sticky;left:0;background:#FFFDF8;z-index:5;border-right:1px solid #EADFCB}
   .gp-gtrack{position:relative;flex:1;display:flex}
@@ -147,7 +163,7 @@
   .gp-arch-main{flex:1;display:flex;align-items:center;gap:10px;background:#FFFDF8;border:1px solid #E4D7C2;border-radius:11px;padding:11px 13px;cursor:pointer;text-align:left;font-family:inherit;transition:.15s}
   .gp-arch-main:hover{background:#F4ECDF}
   .gp-arch-main .pdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-  .gp-arch-title{flex:1;font-weight:700;font-size:14px;text-decoration:line-through;color:#7A6A5C}
+  .gp-arch-title{flex:1;min-width:0;font-weight:700;font-size:14px;text-decoration:line-through;color:#7A6A5C;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .gp-arch-bu{font-size:10.5px;font-weight:800;color:#fff;padding:2px 8px;border-radius:20px}
   .gp-arch-date{font-size:12px;font-weight:700;color:#A89683;white-space:nowrap}
   .gp-radd{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
@@ -155,7 +171,7 @@
   .gp-rdate{max-width:160px;flex:0 0 auto}
   .gp-rlist{display:flex;flex-direction:column;gap:7px}
   .gp-rrow{display:flex;align-items:center;gap:10px;background:#FFFDF8;border:1px solid #E4D7C2;border-radius:11px;padding:10px 13px}
-  .gp-rtext{flex:1;font-weight:700;font-size:14px;cursor:text}
+  .gp-rtext{flex:1;min-width:0;font-weight:700;font-size:14px;cursor:text;word-break:break-word}
   .gp-rtext.done{text-decoration:line-through;color:#A89683}
   .gp-rrow .gp-input{flex:1;padding:6px 10px}
   .gp-rdue{font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;background:#EADFCB;color:#7A6A5C;white-space:nowrap}
@@ -192,6 +208,9 @@
   /* PRIORITÀ SETTIMANALE */
   .gp-pw-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
   .gp-pw-title{font-family:'Fraunces',serif;font-weight:600;font-size:19px;color:#5A4A3D}
+  .gp-pw-lbl{font-weight:800;color:#8A7A6D;font-size:13px;white-space:nowrap}
+  .gp-pw-right{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap}
+  .gp-tipbar{display:flex;align-items:center;gap:8px;background:#FFF6ED;border:1px solid #EAD7C2;border-radius:12px;padding:9px 12px;font-size:12.5px;font-weight:700;color:#8A6A50;margin-bottom:14px;line-height:1.45}
   .gp-daychips{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 6px;margin-bottom:14px;-webkit-overflow-scrolling:touch}
   .gp-daychip{flex:0 0 auto;min-width:58px;border:1.5px solid #E4D7C2;background:#FFFDF8;border-radius:13px;padding:8px 6px;cursor:pointer;text-align:center;font-family:inherit;transition:.15s}
   .gp-daychip .wd{display:block;font-size:10px;font-weight:800;color:#8A7A6D;text-transform:uppercase;letter-spacing:.4px}
@@ -236,14 +255,17 @@
   .gp-pmini button.accent{color:#C75D3A;border-color:#EAC9BC;background:#FFF6ED}
   .gp-pmini button.accent:hover{background:#FCEDE5}
   .gp-late-chip{display:inline-flex;align-items:center;gap:8px;background:#FFFDF8;border:1px solid #E8C9C9;border-radius:11px;padding:7px 11px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;font-weight:700;font-size:13px;box-shadow:0 1px 3px rgba(90,74,61,.06)}
-  .gp-late-chip .pdot{width:9px;height:9px;border-radius:50%}
+  .gp-late-chip{max-width:100%}
+  .gp-late-chip .pdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .gp-late-chip .lt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gp-late-chip .od{white-space:nowrap}
   .gp-late-chip .od{font-size:10.5px;font-weight:800;color:#9E4444}
   .gp-late-chip .lc-btn{border:1px solid #EAC9BC;background:#FFF6ED;color:#C75D3A;border-radius:7px;width:24px;height:24px;display:grid;place-items:center;cursor:pointer;flex-shrink:0}
   .gp-late-chip .lc-btn:hover{background:#FCEDE5}
 
   /* MENÙ A TOCCO (sheet) */
   .gp-sheet-ov{position:fixed;inset:0;z-index:80;background:rgba(58,46,38,.42);backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;animation:gp-fade .18s ease}
-  .gp-sheet{width:min(460px,100%);background:#FBF5EA;border-radius:20px 20px 0 0;padding:18px;box-shadow:0 -10px 40px rgba(58,46,38,.25);animation:gp-up .22s cubic-bezier(.2,.7,.3,1);max-height:88vh;overflow-y:auto}
+  .gp-sheet{width:min(460px,100%);background:#FBF5EA;border-radius:20px 20px 0 0;padding:18px;box-shadow:0 -10px 40px rgba(58,46,38,.25);animation:gp-up .22s cubic-bezier(.2,.7,.3,1);max-height:88vh;overflow-y:auto;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
   @keyframes gp-up{from{transform:translateY(26px);opacity:.5}to{transform:translateY(0);opacity:1}}
   .gp-sheet-h{display:flex;align-items:center;gap:10px}
   .gp-sheet-h .pdot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
@@ -331,14 +353,15 @@
   .gp-toggle .txt{font-weight:700;font-size:14px}
 
   /* SEZIONE LAVORO */
-  .gp-worktop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
-  .gp-worktitle{display:flex;align-items:center;gap:9px;font-family:'Fraunces',serif;font-weight:600;font-size:22px;color:#3A2E26;margin-right:4px}
+  .gp-worktop{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .gp-worktitle{display:flex;align-items:center;gap:9px;font-family:'Fraunces',serif;font-weight:600;font-size:22px;color:#3A2E26;flex:1;min-width:0}
+  .gp-worktools{display:flex;align-items:center;gap:8px;flex-shrink:0;min-width:0}
+  .gp-workbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;min-height:40px}
+  .gp-worknav{display:flex;align-items:center;gap:10px;margin-left:auto}
+  .gp-worklbl{font-size:13px;font-weight:800;color:#8A7A6D;white-space:nowrap}
   .gp-workbadge{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;box-shadow:0 3px 10px rgba(90,74,61,.18)}
-  .gp-worktop .gp-nav{margin-left:auto}
-  .gp-worksub{font-size:13px;font-weight:700;color:#8A7A6D;margin:2px 0 14px}
+  .gp-worksub{display:none;font-size:13px;font-weight:700;color:#8A7A6D;margin:-6px 0 12px}
   .gp-work .gp-gantt-kpis{margin-bottom:14px}
-  .gp-work .gp-cal{height:calc(100vh - 300px);min-height:360px}
-  .gp-work .gp-month .gp-mgrid{min-height:calc(100vh - 340px)}
 
   /* PLANNER a schede */
   .gp-plsum{display:flex;align-items:center;gap:8px;font-size:13px;color:#8A7A6D;font-weight:600;margin:2px 2px 14px}
@@ -397,18 +420,108 @@
     .gp-plsubdel{opacity:1}
   }
 
+  /* BARRA IN BASSO (solo cellulare) */
+  .gp-bottomnav{display:none}
+
   @media (max-width:680px){
     .hide-sm{display:none}
-    .gp-header{padding:12px 14px;gap:9px}
-    .gp-wrap{padding:10px 12px 16px}
-    .gp-cal{height:calc(100vh - 188px)}
-    .gp-controls{width:100%;justify-content:flex-start}
-    .gp-row2{grid-template-columns:1fr}
-    .gp-title{font-size:20px}
-    .gp-gantt-kpis{grid-template-columns:repeat(2,1fr)}
-    .gp-glabel{width:150px;min-width:150px}
-    .gp-mcell{min-height:74px}
+    .show-sm{display:inline}
+
+    /* header compatto: logo + titolo + azioni, sotto solo navigazione periodo e filtro BU */
+    .gp-header{padding:10px 12px 8px;padding-top:calc(10px + env(safe-area-inset-top,0px))}
+    .gp-hrow{gap:8px}
+    .gp-hrow + .gp-hrow{margin-top:8px}
+    .gp-brand{gap:10px}
+    .gp-logo{width:36px;height:36px;border-radius:11px;font-size:20px}
+    .gp-title{font-size:19px}
+    .gp-sub{font-size:12px}
+    .gp-actions{gap:6px}
+    .gp-actions .gp-btn.solid{width:38px;height:38px;padding:0;justify-content:center}
+    .gp-icon{width:38px;height:38px}
+    .gp-tabs-main{display:none}
+    .gp-hrow.r2.notools{display:none}
+    .gp-tools{flex:1;min-width:0}
+    .gp-tools .gp-select{margin-left:auto;min-width:0;max-width:52%}
+    .gp-nav button{height:36px;min-width:36px}
+    .gp-select{font-size:14px;padding:8px}
+
+    .gp-bottomnav{display:flex;flex-shrink:0;gap:2px;background:rgba(251,245,234,.97);border-top:1px solid #E4D7C2;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:30}
+    .gp-bottomnav button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;padding:6px 2px 5px;border-radius:12px;color:#8A7A6D;font-family:inherit;font-size:10px;font-weight:800;cursor:pointer}
+    .gp-bottomnav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .gp-bottomnav button.on{color:#C75D3A;background:#FCEDE5}
+
+    .gp-wrap{padding:10px 10px 14px}
+    .gp-fill{min-height:300px}
+    .gp-fillcol{min-height:440px}
+    .gp-pad{padding:12px}
+    .gp-panel{border-radius:14px}
+
+    /* calendario giorno/settimana */
+    .gp-hourlabel{padding-right:5px}
+    .gp-hourlabel span{font-size:10px}
+    .gp-wh{padding:6px 1px}
+    .gp-wh .wd{font-size:9.5px;letter-spacing:0}
+    .gp-wh .dn{width:24px;height:24px;font-size:13px}
+    .gp-event{padding:3px 4px;border-radius:6px}
+    .ev-title{font-size:11px}
+    .ev-time,.ev-note{font-size:9.5px}
+    .gp-cal.wk .gp-event{padding:3px 3px}
+    .gp-cal.wk .ev-title{white-space:normal;overflow-wrap:normal;text-overflow:clip;font-size:10px;line-height:1.15}
+    .gp-cal.wk .ev-time,.gp-cal.wk .ev-note{display:none}
+
+    /* mese */
+    .gp-mhead div{padding:7px 2px;font-size:10px;letter-spacing:0}
+    .gp-mgrid{grid-auto-rows:minmax(64px,1fr)}
+    .gp-mcell{padding:3px 2px;min-height:64px;gap:2px}
+    .gp-mcell .mday{font-size:11px}
+    .gp-mcell.today .mday{width:20px;height:20px}
+    .gp-pill{font-size:9.5px;padding:1px 3px;border-radius:4px}
+    .gp-pill .pdot{display:none}
+    .gp-more{font-size:9.5px;padding-left:2px}
+
+    /* KPI e Gantt */
+    .gp-gantt-kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:10px}
+    .gp-kpi{padding:9px 8px;border-radius:12px}
+    .gp-kpi .klabel{font-size:10px;text-transform:none;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gp-kpi .kval{font-size:21px}
+    .gp-glabel{width:128px;min-width:128px;padding:7px 8px}
+    .gp-gname{font-size:12px}
+
+    /* lavoro */
+    .gp-worktitle{font-size:19px}
+    .gp-worktools .gp-select{max-width:130px}
+    .gp-workbar{margin-bottom:12px}
+    .gp-worksub{display:block}
+
+    /* priorità */
+    .gp-pw-head{gap:8px}
+    .gp-pw-right{width:100%;justify-content:space-between}
+    .gp-tipbar{font-size:12px;padding:8px 10px}
+    .gp-daychips{gap:5px}
+    .gp-daychip{flex:1 1 0;min-width:0;padding:7px 2px;border-radius:11px}
+    .gp-daychip .dn{font-size:16px}
+    .gp-daychip .cb{font-size:9px}
     .gp-buckets{grid-template-columns:1fr}
+    .gp-pmini button{width:32px;height:32px}
+
+    /* promemoria / archivio */
+    .gp-radd .gp-input{flex:1 1 100%}
+    .gp-radd .gp-rdate{flex:1 1 0;max-width:none;min-width:0}
+    .gp-rrow{padding:9px 10px;gap:8px}
+    .gp-arch-row{padding:5px 10px}
+    .gp-arch-main{min-width:0;padding:10px 11px}
+    .gp-arch-bu{display:none}
+
+    /* scheda evento: pannello dal basso a tutta larghezza, pulsanti sempre visibili */
+    .gp-row2{grid-template-columns:1fr}
+    .gp-overlay.center{padding:0;align-items:flex-end}
+    .gp-modal{width:100%;max-height:94vh;max-height:94dvh;border-radius:20px 20px 0 0;animation:gp-up .22s cubic-bezier(.2,.7,.3,1)}
+    .gp-modal-head{position:sticky;top:0;z-index:2;background:#FBF5EA;padding:14px 16px 8px}
+    .gp-modal-body{padding:4px 16px 14px}
+    .gp-modal-foot{position:sticky;bottom:0;z-index:2;background:#FBF5EA;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+    .gp-input{font-size:16px}
+    .gp-datetime .gp-input{font-size:15px}
+    .gp-drawer{width:100%;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px))}
   }
 </style>
 </head>
@@ -429,6 +542,16 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 const { useState, useEffect, useRef, useMemo } = React;
+
+/* true quando lo schermo è da cellulare (stessa soglia del CSS) */
+function useMedia(q){
+  const [m,setM]=useState(()=>window.matchMedia(q).matches);
+  useEffect(()=>{const mq=window.matchMedia(q);const f=()=>setM(mq.matches);f();
+    if(mq.addEventListener)mq.addEventListener("change",f);else mq.addListener(f);
+    return ()=>{if(mq.removeEventListener)mq.removeEventListener("change",f);else mq.removeListener(f);};},[q]);
+  return m;
+}
+const MOBILE_Q="(max-width:680px)";
 
 /* ---- helper ---- */
 const HOUR_H = 56, DAY_START = 0, DAY_END = 24, GANTT_COL = 38, GANTT_DAYS = 42;
@@ -491,6 +614,7 @@ function Icon({name,size=18,style}){
     case "briefcase":return <svg {...c}><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
     case "hourglass":return <svg {...c}><path d="M6 3h12M6 21h12M8 3v4a4 4 0 0 0 8 0V3M8 21v-4a4 4 0 0 1 8 0v4"/></svg>;
     case "circle":return <svg {...c}><circle cx="12" cy="12" r="9"/></svg>;
+    case "more":return <svg {...c}><circle cx="5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="19" cy="12" r="1.4" fill="currentColor"/></svg>;
     case "edit":return <svg {...c}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>;
     default:return null;
   }
@@ -539,6 +663,10 @@ function Scheduler({user}){
   const [manage,setManage]=useState(null); // null | "activities" | "bu"
   const [editing,setEditing]=useState(null);
   const [workBuId,setWorkBuId]=useState(null);
+  const [moreOpen,setMoreOpen]=useState(false);
+  const wrapRef=useRef(null);
+  // ogni cambio di sezione riparte dall'alto (niente scroll "ereditato" dalla sezione precedente)
+  useEffect(()=>{if(wrapRef.current)wrapRef.current.scrollTop=0;},[view]);
 
   useEffect(()=>{
     const a=db.collection("activities").where("uid","==",user.uid).onSnapshot((s)=>setActivities(s.docs.map((d)=>({id:d.id,...d.data()}))));
@@ -632,32 +760,47 @@ function Scheduler({user}){
   };
 
   const VIEWS=[["day","Giorno","calendar"],["week","Settimana","calendar"],["month","Mese","grid"],["gantt","Gantt","gantt"],["lavoro","Lavoro","briefcase"],["priority","Priorità","flag"],["reminders","Promemoria","bell"],["archive","Archivio","archive"]];
+  const VMAP={};VIEWS.forEach(([v,lbl,ic])=>VMAP[v]={lbl,ic});
+  const MOBILE_MAIN=["day","week","month","lavoro","priority"];
+  const MOBILE_MORE=["gantt","reminders","archive"];
+  const inMore=MOBILE_MORE.includes(view);
+  const hasNav=!["archive","reminders","priority","lavoro"].includes(view);
+  const hasBuSel=!["reminders","lavoro"].includes(view);
+  const fillView=["day","week","month"].includes(view);
 
   return (
     <div className="gp-shell">
       <header className="gp-header">
-        <div className="gp-brand"><div className="gp-logo">G</div><div><div className="gp-title">Giornata</div><div className="gp-sub">{periodLabel}</div></div></div>
-        <div className="gp-controls">
-          <div className="gp-seg">
-            {VIEWS.map(([v,lbl,ic])=>(<button key={v} className={view===v?"on":""} onClick={()=>setView(v)}><Icon name={ic} size={14}/> <span className="hide-sm">{lbl}</span></button>))}
+        <div className="gp-hrow r1">
+          <div className="gp-brand"><div className="gp-logo">G</div><div><div className="gp-title">Giornata</div><div className="gp-sub">{periodLabel}</div></div></div>
+          <div className="gp-actions">
+            <button className="gp-icon" title="Gestisci attività e BU" onClick={()=>setManage("activities")}><Icon name="settings" size={17}/></button>
+            <button className="gp-btn solid" title="Nuovo impegno" onClick={()=>newEventAt(toDateKey(view==="day"||view==="month"?cursor:new Date()),new Date().getHours())}><Icon name="plus" size={16}/> <span className="hide-sm">Nuovo</span></button>
+            <button className="gp-icon" title="Esci" onClick={()=>auth.signOut()}><Icon name="logout" size={16}/></button>
           </div>
-          {view!=="archive" && view!=="reminders" && view!=="priority" && view!=="lavoro" && <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>}
-          {view!=="reminders" && view!=="lavoro" && (<select className="gp-select" value={buFilter} onChange={(e)=>setBuFilter(e.target.value)}>
-            <option value="all">Tutte le BU</option>
-            {bus.map((b)=><option key={b.id} value={b.id}>{b.name}</option>)}
-            <option value={NOBU}>Senza BU</option>
-          </select>)}
-          <button className="gp-icon" title="Gestisci attività e BU" onClick={()=>setManage("activities")}><Icon name="settings" size={17}/></button>
-          <button className="gp-btn solid" onClick={()=>newEventAt(toDateKey(view==="day"||view==="month"?cursor:new Date()),new Date().getHours())}><Icon name="plus" size={16}/> <span className="hide-sm">Nuovo</span></button>
-          <button className="gp-icon" title="Esci" onClick={()=>auth.signOut()}><Icon name="logout" size={16}/></button>
+        </div>
+        <div className={`gp-hrow r2 ${hasNav||hasBuSel?"":"notools"}`}>
+          <div className="gp-tabs-main">
+            <div className="gp-seg">
+              {VIEWS.map(([v,lbl,ic])=>(<button key={v} className={view===v?"on":""} onClick={()=>setView(v)}><Icon name={ic} size={14}/> <span>{lbl}</span></button>))}
+            </div>
+          </div>
+          {(hasNav||hasBuSel) && <div className="gp-tools">
+            {hasNav && <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>}
+            {hasBuSel && (<select className="gp-select" value={buFilter} onChange={(e)=>setBuFilter(e.target.value)}>
+              <option value="all">Tutte le BU</option>
+              {bus.map((b)=><option key={b.id} value={b.id}>{b.name}</option>)}
+              <option value={NOBU}>Senza BU</option>
+            </select>)}
+          </div>}
         </div>
       </header>
 
-      <main className="gp-wrap">
+      <main className="gp-wrap" ref={wrapRef}>
         {(view==="day"||view==="week") &&
-          <div className="gp-panel"><DayWeek days={days} view={view} events={shown.filter((e)=>e.inCalendar!==false)} buMap={buMap} onSlot={newEventAt} onEvent={openEvent}/></div>}
+          <div className="gp-panel gp-fill"><DayWeek days={days} view={view} events={shown.filter((e)=>e.inCalendar!==false)} buMap={buMap} onSlot={newEventAt} onEvent={openEvent}/></div>}
         {view==="month" &&
-          <div className="gp-panel gp-month"><MonthView cursor={cursor} events={shown.filter((e)=>e.inCalendar!==false)} buMap={buMap} onDay={(k)=>newEventAt(k,9)} onEvent={openEvent}/></div>}
+          <div className="gp-panel gp-month gp-fill"><MonthView cursor={cursor} events={shown.filter((e)=>e.inCalendar!==false)} buMap={buMap} onDay={(k)=>newEventAt(k,9)} onEvent={openEvent}/></div>}
         {view==="gantt" &&
           <GanttView start={ganttStart} events={shown.filter((e)=>e.inGantt!==false)} bus={bus} buFilter={buFilter} onNew={()=>newEventAt(toDateKey(new Date()),9)} onEvent={openEvent} onToggle={toggleDone}/>}
         {view==="lavoro" &&
@@ -669,6 +812,21 @@ function Scheduler({user}){
         {view==="reminders" &&
           <ReminderView reminders={reminders} onAdd={addReminder} onUpdate={updateReminder} onDelete={deleteReminder}/>}
       </main>
+
+      <nav className="gp-bottomnav">
+        {MOBILE_MAIN.map((v)=>(<button key={v} className={view===v?"on":""} onClick={()=>setView(v)}><Icon name={VMAP[v].ic} size={19}/><span>{VMAP[v].lbl}</span></button>))}
+        <button className={inMore?"on":""} onClick={()=>setMoreOpen(true)}><Icon name={inMore?VMAP[view].ic:"more"} size={19}/><span>{inMore?VMAP[view].lbl:"Altro"}</span></button>
+      </nav>
+
+      {moreOpen && <div className="gp-sheet-ov" onClick={()=>setMoreOpen(false)}>
+        <div className="gp-sheet" onClick={(e)=>e.stopPropagation()}>
+          <div className="gp-sheet-h"><span className="nm">Altre sezioni</span><button className="gp-icon" onClick={()=>setMoreOpen(false)}><Icon name="x"/></button></div>
+          <div className="gp-lvlgrid" style={{marginTop:14}}>
+            {MOBILE_MORE.map((v)=>(<button key={v} className={`gp-lvlbtn ${view===v?"on":""}`} onClick={()=>{setView(v);setMoreOpen(false);}}><Icon name={VMAP[v].ic} size={17}/>{VMAP[v].lbl}</button>))}
+            <button className="gp-lvlbtn" onClick={()=>{setMoreOpen(false);setManage("activities");}}><Icon name="settings" size={17}/>Gestione</button>
+          </div>
+        </div>
+      </div>}
 
       {manage && <ManageDrawer tab={manage} setTab={setManage} activities={activities} bus={bus} buMap={buMap}
         onClose={()=>setManage(null)} onUpsertAct={upsertActivity} onRemoveAct={removeActivity} onSeedAct={seedActivities}
@@ -688,9 +846,11 @@ function DayWeek({days,view,events,buMap,onSlot,onEvent}){
   const handleClick=(e,day)=>{const r=e.currentTarget.getBoundingClientRect();let m=((e.clientY-r.top)/HOUR_H)*60+DAY_START*60;m=Math.max(0,Math.round(m/15)*15);const h=Math.floor(m/60);if(h>=24)return;onSlot(toDateKey(day),h,m%60);};
   const dayEvents=(day)=>{const ws=new Date(day);ws.setHours(DAY_START,0,0,0);const we=new Date(day);we.setHours(DAY_END,0,0,0);
     return layoutDay(events.filter((ev)=>new Date(ev.end)>ws&&new Date(ev.start)<we).map((ev)=>({...ev,_s:Math.max(0,minutesInDay(new Date(ev.start),day)),_e:Math.min((DAY_END-DAY_START)*60,minutesInDay(new Date(ev.end),day))})));};
-  const tmpl=`56px repeat(${days.length}, minmax(${view==="week"?"110px":"0"}, 1fr))`;
+  const mobile=useMedia(MOBILE_Q);
+  // su cellulare la settimana entra tutta nello schermo (niente scorrimento laterale)
+  const tmpl=`${mobile?40:56}px repeat(${days.length}, minmax(${view==="week"&&!mobile?"110px":"0"}, 1fr))`;
   return (
-    <div className="gp-cal" ref={ref}>
+    <div className={`gp-cal ${view==="week"?"wk":""}`} ref={ref}>
       {view==="week" && <div className="gp-weekhead" style={{gridTemplateColumns:tmpl}}><div/>{days.map((d)=>(<div key={toDateKey(d)} className={`gp-wh ${sameDay(d,new Date())?"today":""}`}><span className="wd">{WEEKDAYS[(d.getDay()+6)%7]}</span><span className="dn">{d.getDate()}</span></div>))}</div>}
       <div className="gp-grid" style={{gridTemplateColumns:tmpl}}>
         <div className="gp-gutter-col">{hours.map((h)=><div key={h} className="gp-hourlabel" style={{height:HOUR_H}}><span>{pad(h)}:00</span></div>)}</div>
@@ -717,7 +877,7 @@ function MonthView({cursor,events,buMap,onDay,onEvent}){
   const cells=Array.from({length:42},(_,i)=>addDays(gridStart,i));
   const byDay=useMemo(()=>{const m={};events.forEach((ev)=>{const s=startOfDay(new Date(ev.start)),e=startOfDay(new Date(ev.end));for(let d=new Date(s);d<=e;d=addDays(d,1)){const k=toDateKey(d);(m[k]=m[k]||[]).push(ev);}});return m;},[events]);
   return (
-    <div>
+    <div className="gp-mroot">
       <div className="gp-mhead">{WEEKDAYS.map((w)=><div key={w}>{w}</div>)}</div>
       <div className="gp-mgrid">
         {cells.map((d)=>{const k=toDateKey(d);const out=d.getMonth()!==cursor.getMonth();const list=(byDay[k]||[]).sort((a,b)=>new Date(a.start)-new Date(b.start));
@@ -725,7 +885,7 @@ function MonthView({cursor,events,buMap,onDay,onEvent}){
             <span className="mday">{d.getDate()}</span>
             {list.slice(0,3).map((ev)=>{const bc=ev.buId&&buMap[ev.buId]?buMap[ev.buId].color:ev.color;
               return (<button key={ev.id+k} className={`gp-pill ${ev.done?"done":""}`} style={{background:hexToRgba(ev.color,0.16),color:ev.color}} onClick={(e)=>{e.stopPropagation();onEvent(ev);}}><span className="pdot" style={{background:bc}}/>{ev.title}</button>);})}
-            {list.length>3&&<span className="gp-more">+{list.length-3} altri</span>}
+            {list.length>3&&<span className="gp-more">+{list.length-3}<span className="hide-sm"> altri</span></span>}
           </div>);})}
       </div>
     </div>
@@ -750,7 +910,7 @@ function GanttView({start,events,bus,buFilter,onNew,onEvent,onToggle}){
   const showNow=nowLeft>=0&&nowLeft<=GANTT_DAYS*GANTT_COL;
 
   return (
-    <div>
+    <div className="gp-fillcol">
       <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
         <button className="gp-btn ghost sm" onClick={onNew}><Icon name="plus" size={15}/> Nuova attività</button>
       </div>
@@ -760,7 +920,7 @@ function GanttView({start,events,bus,buFilter,onNew,onEvent,onToggle}){
         <div className="gp-kpi"><div className="klabel">Da fare</div><div className="kval">{todo}</div></div>
         <div className="gp-kpi late"><div className="klabel">In ritardo</div><div className="kval">{late}</div></div>
       </div>
-      <div className="gp-panel gp-gantt">
+      <div className="gp-panel gp-gantt gp-fill">
         <div className="gp-gantt-inner">
           <div className="gp-grow gp-ghead">
             <div className="gp-glabel">Attività</div>
@@ -835,18 +995,25 @@ function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewW
   const SUBS=[["planner","Planner","list"],["month","Mese","grid"],["week","Settimana","calendar"],["gantt","Gantt","gantt"]];
 
   return (
-    <div className="gp-work">
+    <div className={`gp-work ${sub!=="planner"&&bus.length>0?"gp-fillcol":""}`}>
       <div className="gp-worktop">
         <div className="gp-worktitle"><span className="gp-workbadge" style={{background:workColor}}><Icon name="briefcase" size={16} style={{color:"#fff"}}/></span>Lavoro</div>
-        <div className="gp-seg">{SUBS.map(([v,lbl,ic])=>(<button key={v} className={sub===v?"on":""} onClick={()=>setSub(v)}><Icon name={ic} size={14}/> <span className="hide-sm">{lbl}</span></button>))}</div>
-        {sub!=="planner" && <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>}
-        <select className="gp-select" value={workBuId||""} onChange={(e)=>setWorkBuId(e.target.value||null)} title="Quale Business Unit conta come Lavoro">
-          {bus.map((b)=><option key={b.id} value={b.id}>{b.name}</option>)}
-          <option value="">Senza BU</option>
-        </select>
-        <button className="gp-btn solid sm" onClick={addWork}><Icon name="plus" size={15}/> <span className="hide-sm">Nuovo</span></button>
+        <div className="gp-worktools">
+          <select className="gp-select" value={workBuId||""} onChange={(e)=>setWorkBuId(e.target.value||null)} title="Quale Business Unit conta come Lavoro">
+            {bus.map((b)=><option key={b.id} value={b.id}>{b.name}</option>)}
+            <option value="">Senza BU</option>
+          </select>
+          <button className="gp-btn solid sm" onClick={addWork}><Icon name="plus" size={15}/> <span className="hide-sm">Nuovo</span></button>
+        </div>
       </div>
 
+      <div className="gp-workbar">
+        <div className="gp-seg">{SUBS.map(([v,lbl,ic])=>(<button key={v} className={sub===v?"on":""} onClick={()=>setSub(v)}><Icon name={ic} size={14}/> <span className="hide-sm">{lbl}</span></button>))}</div>
+        {sub!=="planner" && <div className="gp-worknav">
+          <span className="gp-worklbl hide-sm">{label}</span>
+          <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>
+        </div>}
+      </div>
       {sub!=="planner" && <div className="gp-worksub">{label}</div>}
 
       <div className="gp-gantt-kpis">
@@ -862,11 +1029,11 @@ function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewW
         {sub==="planner" &&
           <PlannerView events={workEvents.filter(showInPlanner)} color={workColor} onEvent={onEvent} onPatch={onPatch} onNew={()=>onNewWithBu(toDateKey(new Date()),9,0,workBuId,60,{plannerOnly:true})}/>}
         {sub==="month" &&
-          <div className="gp-panel gp-month"><MonthView cursor={cursor} events={workEvents.filter((e)=>e.inCalendar!==false)} buMap={buMap} onDay={(k)=>onNewWithBu(k,9,0,workBuId,60)} onEvent={onEvent}/></div>}
+          <div className="gp-panel gp-month gp-fill"><MonthView cursor={cursor} events={workEvents.filter((e)=>e.inCalendar!==false)} buMap={buMap} onDay={(k)=>onNewWithBu(k,9,0,workBuId,60)} onEvent={onEvent}/></div>}
         {sub==="week" &&
-          <div className="gp-panel"><DayWeek days={weekDays} view="week" events={workEvents.filter((e)=>e.inCalendar!==false)} buMap={buMap} onSlot={(k,h,m)=>onNewWithBu(k,h,m,workBuId,60)} onEvent={onEvent}/></div>}
+          <div className="gp-panel gp-fill"><DayWeek days={weekDays} view="week" events={workEvents.filter((e)=>e.inCalendar!==false)} buMap={buMap} onSlot={(k,h,m)=>onNewWithBu(k,h,m,workBuId,60)} onEvent={onEvent}/></div>}
         {sub==="gantt" &&
-          <div className="gp-panel gp-gantt"><div className="gp-gantt-inner">
+          <div className="gp-panel gp-gantt gp-fill"><div className="gp-gantt-inner">
             <div className="gp-grow gp-ghead">
               <div className="gp-glabel">Attività</div>
               <div className="gp-gtrack">{Array.from({length:GANTT_DAYS},(_,i)=>addDays(gStart,i)).map((d)=>{const we=(d.getDay()+6)%7>=5;const td=sameDay(d,new Date());
@@ -1166,22 +1333,24 @@ function PriorityView({events,workEvents,workBuId,bus,buMap,onEvent,onToggle,onR
     : `${weekStart.getDate()} ${MONTHS[weekStart.getMonth()].slice(0,3)} – ${wkEnd.getDate()} ${MONTHS[wkEnd.getMonth()].slice(0,3)}`;
 
   return (
-    <div className="gp-panel" style={{padding:"16px"}}>
+    <div className="gp-panel gp-pad">
       <div className="gp-pw-head">
         <span className="gp-pw-title">Settimana</span>
-        <div className="gp-nav">
-          <button onClick={()=>setWeekStart((w)=>addDays(w,-7))}><Icon name="left"/></button>
-          <button className="today" onClick={()=>{setWeekStart(startOfWeek(new Date()));setSelKey(toDateKey(new Date()));}}>Questa settimana</button>
-          <button onClick={()=>setWeekStart((w)=>addDays(w,7))}><Icon name="right"/></button>
-        </div>
-        <span style={{fontWeight:800,color:"#8A7A6D",fontSize:13}}>{wkLabel}</span>
-        <div className="gp-seg" style={{marginLeft:"auto"}}>
-          <button className={focus==="all"?"on":""} onClick={()=>setFocus("all")}><Icon name="list" size={14}/> <span className="hide-sm">Tutto</span></button>
-          <button className={focus==="work"?"on":""} onClick={()=>setFocus("work")} disabled={!workBuId} title={workBuId?"Solo i task di lavoro":"Nessuna BU di lavoro impostata"}><Icon name="briefcase" size={14}/> <span className="hide-sm">Lavoro</span></button>
+        <span className="gp-pw-lbl">{wkLabel}</span>
+        <div className="gp-pw-right">
+          <div className="gp-nav">
+            <button onClick={()=>setWeekStart((w)=>addDays(w,-7))}><Icon name="left"/></button>
+            <button className="today" onClick={()=>{setWeekStart(startOfWeek(new Date()));setSelKey(toDateKey(new Date()));}}><span className="hide-sm">Questa settimana</span><span className="show-sm">Oggi</span></button>
+            <button onClick={()=>setWeekStart((w)=>addDays(w,7))}><Icon name="right"/></button>
+          </div>
+          <div className="gp-seg">
+            <button className={focus==="all"?"on":""} onClick={()=>setFocus("all")}><Icon name="list" size={14}/> <span>Tutto</span></button>
+            <button className={focus==="work"?"on":""} onClick={()=>setFocus("work")} disabled={!workBuId} title={workBuId?"Solo i task di lavoro":"Nessuna BU di lavoro impostata"}><Icon name="briefcase" size={14}/> <span>Lavoro</span></button>
+          </div>
         </div>
       </div>
 
-      <div style={{display:"flex",alignItems:"center",gap:8,background:"#FFF6ED",border:"1px solid #EAD7C2",borderRadius:12,padding:"9px 12px",fontSize:12.5,fontWeight:700,color:"#8A6A50",marginBottom:14,lineHeight:1.45}}>
+      <div className="gp-tipbar">
         <Icon name="move" size={16} style={{flexShrink:0,color:"#C75D3A"}}/>
         <span>Per assegnare una priorità <b>tocca un'attività</b>: si apre un menù dove scegli il riquadro o il giorno dove metterla. Da computer puoi anche <b>trascinarla</b> col mouse.</span>
       </div>
@@ -1202,7 +1371,7 @@ function PriorityView({events,workEvents,workBuId,bus,buMap,onEvent,onToggle,onR
           <div className="gp-late-list">
             {overdue.map((ev)=>{const e=new Date(ev.end);
               return (<div key={ev.id} className="gp-late-chip" onPointerDown={(e2)=>onPointerDown(e2,ev)} onClick={()=>{if(justDragRef.current)return;setMenuEv(ev);}} title="Tocca per scegliere il giorno (o trascina col mouse)">
-                <span className="pdot" style={{background:ev.color}}/>{ev.title}
+                <span className="pdot" style={{background:ev.color}}/><span className="lt">{ev.title}</span>
                 <span className="od">scad. {e.getDate()} {MONTHS[e.getMonth()].slice(0,3)}</span>
                 <button className="lc-btn" onPointerDown={(e2)=>e2.stopPropagation()} onClick={(e2)=>{e2.stopPropagation();setMenuEv(ev);}} title="Assegna / sposta"><Icon name="move" size={13}/></button>
               </div>);})}
@@ -1306,7 +1475,7 @@ function ReminderView({reminders,onAdd,onUpdate,onDelete}){
     </div>
   );
   return (
-    <div className="gp-panel" style={{padding:"16px"}}>
+    <div className="gp-panel gp-pad">
       <div className="gp-radd">
         <input className="gp-input" placeholder="Aggiungi un promemoria…" value={text} onChange={(e)=>setText(e.target.value)} onKeyDown={(e)=>e.key==="Enter"&&add()}/>
         <input className="gp-input gp-rdate" type="date" value={due} onChange={(e)=>setDue(e.target.value)}/>
