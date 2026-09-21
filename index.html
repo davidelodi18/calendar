@@ -77,7 +77,7 @@
 
   /* AREA CONTENUTO */
   /* L'area contenuti è l'unico contenitore che scorre: la barra di scorrimento ha sempre il suo spazio riservato, così la pagina non si sposta cambiando sezione */
-  .gp-wrap{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;display:flex;flex-direction:column;padding:16px 20px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .gp-wrap{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;display:flex;flex-direction:column;padding:16px 20px 24px;overscroll-behavior:contain}
   .gp-fill{flex:1 1 0;min-height:360px;display:flex;flex-direction:column}
   .gp-fillcol{flex:1 1 0;min-height:520px;display:flex;flex-direction:column}
   .gp-fillcol > .gp-fill{min-height:0}
@@ -265,7 +265,7 @@
 
   /* MENÙ A TOCCO (sheet) */
   .gp-sheet-ov{position:fixed;inset:0;z-index:80;background:rgba(58,46,38,.42);backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;animation:gp-fade .18s ease}
-  .gp-sheet{width:min(460px,100%);background:#FBF5EA;border-radius:20px 20px 0 0;padding:18px;box-shadow:0 -10px 40px rgba(58,46,38,.25);animation:gp-up .22s cubic-bezier(.2,.7,.3,1);max-height:88vh;overflow-y:auto;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+  .gp-sheet{width:min(460px,100%);background:#FBF5EA;border-radius:20px 20px 0 0;padding:18px;box-shadow:0 -10px 40px rgba(58,46,38,.25);animation:gp-up .22s cubic-bezier(.2,.7,.3,1);max-height:88vh;max-height:calc(100dvh - 24px);overflow-y:auto;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
   @keyframes gp-up{from{transform:translateY(26px);opacity:.5}to{transform:translateY(0);opacity:1}}
   .gp-sheet-h{display:flex;align-items:center;gap:10px}
   .gp-sheet-h .pdot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
@@ -773,7 +773,8 @@ function Scheduler({user}){
   const defaultBu=()=>buFilter!=="all"&&buFilter!==NOBU?buFilter:null;
   const newEventAt=(dateKey,hour,minute=0,activity=null)=>{
     const endMin=minute+(activity?.dur??60);let eh=hour+Math.floor(endMin/60),em=endMin%60;if(eh>=24){eh=23;em=59;}
-    setEditing({id:null,activityId:activity?.id??null,buId:activity?.buId??defaultBu(),title:activity?.name??"",color:activity?.color??PALETTE[0],startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:true,inGantt:true,inPlanner:true,priority:null,priorityLevel:null,prio:null,status:"todo",subtasks:[],repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
+    const bu0=activity?.buId??defaultBu();
+    setEditing({id:null,activityId:activity?.id??null,buId:bu0,title:activity?.name??"",color:activity?.color??(bu0&&buMap[bu0]?buMap[bu0].color:PALETTE[0]),startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:true,inGantt:true,inPlanner:true,priority:null,priorityLevel:null,prio:null,status:"todo",subtasks:[],repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
   };
   const openEvent=(ev)=>{const s=new Date(ev.start),e=new Date(ev.end);setEditing({id:ev.id,activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,startDate:toDateKey(s),startTime:timeStr(s),endDate:toDateKey(e),endTime:timeStr(e),note:ev.note||"",done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,inPlanner:showInPlanner(ev),priority:ev.priority??null,priorityLevel:ev.priorityLevel??null,prio:ev.prio??null,status:ev.status||(ev.done?"done":"todo"),subtasks:ev.subtasks||[],_isNew:false});};
   const newEventWithBu=(dateKey,hour,minute=0,buId=null,dur=60,opts={})=>{
@@ -1424,9 +1425,9 @@ function PriorityView({events,workEvents,workBuId,bus,buMap,onEvent,onToggle,onR
           : <div className="gp-pool-list">{pool.map((ev)=><Chip key={ev.id} ev={ev}/>)}</div>}
       </div>
 
-      {drag && <div className="gp-drag-ghost" style={{left:drag.x+14,top:drag.y+14}}>
+      {drag && ReactDOM.createPortal(<div className="gp-drag-ghost" style={{left:drag.x+14,top:drag.y+14}}>
         <span className="dot" style={{background:drag.ev.color}}/><span className="t">{drag.ev.title}</span>
-      </div>}
+      </div>,document.body)}
 
       {menuEv && <AssignSheet ev={menuEv} selKey={selKey} selLabel={selLabel} weekDays={weekDays}
         onLevel={(l)=>applyLevel(menuEv,l)} onDay={(dk)=>applyDay(menuEv,dk)}
@@ -1439,7 +1440,7 @@ function PriorityView({events,workEvents,workBuId,bus,buMap,onEvent,onToggle,onR
 function AssignSheet({ev,selKey,selLabel,weekDays,onLevel,onDay,onOpen,onClose}){
   const cur=ev.priorityLevel||null;
   const evDay=toDateKey(startOfDay(new Date(ev.start)));
-  return (
+  return ReactDOM.createPortal(
     <div className="gp-sheet-ov" onClick={onClose}>
       <div className="gp-sheet" onClick={(e)=>e.stopPropagation()}>
         <div className="gp-sheet-h">
@@ -1467,7 +1468,8 @@ function AssignSheet({ev,selKey,selLabel,weekDays,onLevel,onDay,onOpen,onClose})
         </div>
         <button className="gp-btn ghost block" style={{marginTop:14}} onClick={onOpen}><Icon name="pencil" size={15}/> Apri scheda completa</button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -1645,7 +1647,7 @@ function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete}){
           <input className="gp-input" placeholder="Es. Riunione, Allenamento…" value={draft.title} onChange={(e)=>set({title:e.target.value,activityId:null})}/>
           <label className="gp-lbl">Business Unit</label>
           <div className="gp-chips">
-            {bus.map((b)=>(<button key={b.id} className={`gp-chip ${draft.buId===b.id?"on":""}`} style={draft.buId===b.id?{borderColor:b.color,background:hexToRgba(b.color,0.12)}:{}} onClick={()=>set({buId:b.id})}><span className="dot" style={{background:b.color}}/> {b.name}</button>))}
+            {bus.map((b)=>(<button key={b.id} className={`gp-chip ${draft.buId===b.id?"on":""}`} style={draft.buId===b.id?{borderColor:b.color,background:hexToRgba(b.color,0.12)}:{}} onClick={()=>set({buId:b.id,color:b.color})}><span className="dot" style={{background:b.color}}/> {b.name}</button>))}
             <button className={`gp-chip ${!draft.buId?"on":""}`} onClick={()=>set({buId:null})}>Nessuna</button>
           </div>
           <div className="gp-row2">
