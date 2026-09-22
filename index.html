@@ -391,7 +391,10 @@
   .gp-plnote{margin-top:9px;font-size:12.5px;line-height:1.45;color:#7A6B5D;background:#FBF5EC;border-radius:9px;padding:7px 9px;white-space:pre-wrap;word-break:break-word}
   .gp-plsubs{margin-top:10px;display:flex;flex-direction:column;gap:2px}
   .gp-plsub{display:flex;align-items:center;gap:8px;padding:3px 2px;font-size:13px;color:#4A3E34}
-  .gp-plsub .t{flex:1;line-height:1.35}
+  .gp-plsub .t{flex:1;min-width:0;line-height:1.35;word-break:break-word}
+  .gp-plsub .t.edit{cursor:text;border-radius:6px;padding:1px 4px;margin-left:-4px}
+  .gp-plsub .t.edit:hover{background:#F7ECE0}
+  .gp-plsub .gp-input.sm{flex:1;min-width:0}
   .gp-plsub.done .t{text-decoration:line-through;color:#A99C8D}
   .gp-check.sm{width:18px;height:18px;border-radius:6px;flex-shrink:0}
   .gp-plsubdel{opacity:0;background:none;border:none;cursor:pointer;color:#C4B5A3;padding:2px;border-radius:6px;transition:opacity .12s}
@@ -1144,6 +1147,8 @@ function PlannerView({events,color,onEvent,onPatch,onNew}){
 function PlannerCard({ev,color,onEvent,onPatch}){
   const [adding,setAdding]=useState(false);
   const [txt,setTxt]=useState("");
+  const [editSubId,setEditSubId]=useState(null);
+  const [editSubTxt,setEditSubTxt]=useState("");
   const st=stOf(ev);
   const nextSt={todo:"doing",doing:"done",done:"todo"}[st];
   const STM={todo:{ic:"circle",lbl:"Da fare"},doing:{ic:"hourglass",lbl:"In corso"},done:{ic:"check",lbl:"Fatto"}}[st];
@@ -1156,6 +1161,13 @@ function PlannerCard({ev,color,onEvent,onPatch}){
   const setPrio=()=>onPatch(ev.id,{prio:cyclePrio(ev.prio||null)});
   const toggleSub=(id)=>onPatch(ev.id,{subtasks:subs.map((s)=>s.id===id?{...s,done:!s.done}:s)});
   const delSub=(id)=>onPatch(ev.id,{subtasks:subs.filter((s)=>s.id!==id)});
+  const startEditSub=(s)=>{setEditSubId(s.id);setEditSubTxt(s.text);};
+  const saveEditSub=()=>{
+    if(editSubId===null)return;
+    const t=editSubTxt.trim();
+    onPatch(ev.id,{subtasks:t?subs.map((s)=>s.id===editSubId?{...s,text:t}:s):subs.filter((s)=>s.id!==editSubId)});
+    setEditSubId(null);setEditSubTxt("");
+  };
   const addSub=()=>{const t=txt.trim();if(!t)return;onPatch(ev.id,{subtasks:[...subs,{id:"st-"+Date.now()+Math.random().toString(36).slice(2,5),text:t,done:false}]});setTxt("");};
   return (
     <div className={`gp-plcard st-${st}`} style={{borderLeftColor:color}}>
@@ -1173,7 +1185,9 @@ function PlannerCard({ev,color,onEvent,onPatch}){
       {subs.length>0&&<div className="gp-plsubs">{subs.map((s)=>(
         <div key={s.id} className={`gp-plsub ${s.done?"done":""}`}>
           <button className={`gp-check sm ${s.done?"on":""}`} onClick={()=>toggleSub(s.id)}>{s.done&&<Icon name="check" size={10} style={{color:"#fff"}}/>}</button>
-          <span className="t">{s.text}</span>
+          {editSubId===s.id
+            ? <input autoFocus className="gp-input sm" value={editSubTxt} onChange={(e)=>setEditSubTxt(e.target.value)} onBlur={saveEditSub} onKeyDown={(e)=>{if(e.key==="Enter")saveEditSub();if(e.key==="Escape"){setEditSubId(null);setEditSubTxt("");}}}/>
+            : <span className="t edit" title="Tocca per modificare il testo" onClick={()=>startEditSub(s)}>{s.text}</span>}
           <button className="gp-plsubdel" onClick={()=>delSub(s.id)} title="Rimuovi"><Icon name="x" size={12}/></button>
         </div>
       ))}</div>}
@@ -1610,16 +1624,26 @@ function ManageDrawer({tab,setTab,activities,bus,buMap,onClose,onUpsertAct,onRem
 /* ---- Modal evento ---- */
 function ModalSubtasks({items,onChange}){
   const [txt,setTxt]=useState("");
+  const [editId,setEditId]=useState(null);
+  const [editTxt,setEditTxt]=useState("");
   const list=Array.isArray(items)?items:[];
   const add=()=>{const t=txt.trim();if(!t)return;onChange([...list,{id:"st-"+Date.now()+Math.random().toString(36).slice(2,5),text:t,done:false}]);setTxt("");};
   const toggle=(id)=>onChange(list.map((s)=>s.id===id?{...s,done:!s.done}:s));
   const del=(id)=>onChange(list.filter((s)=>s.id!==id));
+  const saveEdit=()=>{
+    if(editId===null)return;
+    const t=editTxt.trim();
+    onChange(t?list.map((s)=>s.id===editId?{...s,text:t}:s):list.filter((s)=>s.id!==editId));
+    setEditId(null);setEditTxt("");
+  };
   return (
     <div className="gp-msubs">
       {list.map((s)=>(
         <div key={s.id} className={`gp-plsub ${s.done?"done":""}`}>
           <button className={`gp-check sm ${s.done?"on":""}`} onClick={()=>toggle(s.id)}>{s.done&&<Icon name="check" size={10} style={{color:"#fff"}}/>}</button>
-          <span className="t">{s.text}</span>
+          {editId===s.id
+            ? <input autoFocus className="gp-input sm" value={editTxt} onChange={(e)=>setEditTxt(e.target.value)} onBlur={saveEdit} onKeyDown={(e)=>{if(e.key==="Enter"){e.preventDefault();saveEdit();}if(e.key==="Escape"){setEditId(null);setEditTxt("");}}}/>
+            : <span className="t edit" title="Tocca per modificare il testo" onClick={()=>{setEditId(s.id);setEditTxt(s.text);}}>{s.text}</span>}
           <button className="gp-plsubdel" onClick={()=>del(s.id)}><Icon name="x" size={12}/></button>
         </div>
       ))}
@@ -1633,6 +1657,16 @@ function ModalSubtasks({items,onChange}){
 
 function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete}){
   const set=(p)=>onChange({...draft,...p});
+  // spostando l'inizio, la fine si sposta insieme mantenendo la durata (1 ora per un impegno nuovo)
+  const shiftStart=(startDate,startTime)=>{
+    const oldS=new Date(`${draft.startDate}T${draft.startTime||"00:00"}`);
+    const oldE=new Date(`${draft.endDate}T${draft.endTime||"00:00"}`);
+    let durMs=oldE-oldS; if(!(durMs>0)) durMs=3600000;
+    const nS=new Date(`${startDate}T${startTime||"00:00"}`);
+    if(isNaN(nS)) return set({startDate,startTime});
+    const nE=new Date(nS.getTime()+durMs);
+    set({startDate,startTime,endDate:toDateKey(nE),endTime:timeStr(nE)});
+  };
   const multiDay=draft.startDate!==draft.endDate;
   return (
     <div className="gp-overlay center" onClick={onClose}>
@@ -1651,7 +1685,7 @@ function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete}){
             <button className={`gp-chip ${!draft.buId?"on":""}`} onClick={()=>set({buId:null})}>Nessuna</button>
           </div>
           <div className="gp-row2">
-            <div><label className="gp-lbl">Inizio</label><div className="gp-datetime"><input className="gp-input" type="date" value={draft.startDate} onChange={(e)=>set({startDate:e.target.value,endDate:multiDay?draft.endDate:e.target.value})}/><input className="gp-input" type="time" value={draft.startTime} onChange={(e)=>set({startTime:e.target.value})}/></div></div>
+            <div><label className="gp-lbl">Inizio</label><div className="gp-datetime"><input className="gp-input" type="date" value={draft.startDate} onChange={(e)=>shiftStart(e.target.value,draft.startTime)}/><input className="gp-input" type="time" value={draft.startTime} onChange={(e)=>shiftStart(draft.startDate,e.target.value)}/></div></div>
             <div><label className="gp-lbl">Fine / Scadenza</label><div className="gp-datetime"><input className="gp-input" type="date" value={draft.endDate} onChange={(e)=>set({endDate:e.target.value})}/><input className="gp-input" type="time" value={draft.endTime} onChange={(e)=>set({endTime:e.target.value})}/></div></div>
           </div>
           <label className="gp-lbl">Colore</label>
