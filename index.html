@@ -368,7 +368,30 @@
   .gp-plsum b{color:#3A2E26}.gp-plsum .sep{opacity:.5}.gp-plsum .late b{color:#B4462F}
   .gp-plgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:12px;align-items:start}
   .gp-plcard{min-width:0}
-  .gp-plcard{background:#FFFDF8;border:1px solid #EAD9C4;border-left:4px solid #5B7DA8;border-radius:14px;padding:12px 13px;box-shadow:0 2px 10px rgba(90,74,61,.05)}
+  .gp-plcard{background:#FFFDF8;border:1px solid #EAD9C4;border-left:5px solid #C9B9A4;border-radius:14px;padding:12px 13px;box-shadow:0 2px 10px rgba(90,74,61,.05)}
+  /* colori per priorità */
+  .gp-plcard.p-alta{border-left-color:#B4462F;background:#FFF9F6;border-color:#EFD3C8}
+  .gp-plcard.p-media{border-left-color:#D9A441;background:#FFFCF2;border-color:#EEDCB4}
+  .gp-plcard.p-bassa{border-left-color:#7E9B6E;background:#FBFDF8;border-color:#DCE7D2}
+  .gp-plcard.p-none{border-left-color:#C9B9A4}
+  .gp-plcard.dragging{opacity:.35}
+  /* gruppi di priorità */
+  .gp-plgroup{margin:0 0 18px}
+  .gp-plgroup-h{display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:11px;font-size:12px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px}
+  .gp-plgroup-h .n{margin-left:auto;font-weight:800;opacity:.75;letter-spacing:0}
+  .gp-plgroup-h .gdot{width:10px;height:10px;border-radius:50%}
+  .gp-plgroup.g-alta .gp-plgroup-h{background:#FBEDE7;color:#B4462F}
+  .gp-plgroup.g-media .gp-plgroup-h{background:#FDF3DD;color:#9A6B1E}
+  .gp-plgroup.g-bassa .gp-plgroup-h{background:#EEF4E8;color:#5E7E52}
+  .gp-plgroup.g-none .gp-plgroup-h{background:#F3EBDD;color:#8A7A6D}
+  .gp-plgroup.is-over .gp-plgroup-h{outline:2px dashed currentColor;outline-offset:2px}
+  .gp-plgrip{display:flex;align-items:center;justify-content:center;width:28px;height:28px;flex-shrink:0;border:none;background:none;border-radius:8px;color:#B7A695;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+  .gp-plgrip:hover{background:#F7ECE0;color:#6E5F51}
+  .gp-plgrip:active{cursor:grabbing}
+  .gp-pldropzone{min-height:54px;border:2px dashed #D9C6AC;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#A99C8D;font-size:12.5px;font-weight:800}
+  .gp-pldrop{pointer-events:none;border:2px dashed #C75D3A;background:rgba(199,93,58,.07);border-radius:14px;min-height:64px}
+  .gp-plghost{position:fixed;z-index:130;pointer-events:none;background:#FFFDF8;border:1px solid #EAD9C4;border-left:5px solid #C75D3A;border-radius:12px;padding:8px 12px;font-size:13px;font-weight:800;color:#3A2E26;box-shadow:0 10px 26px rgba(58,46,38,.22);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transform:translate(10px,10px)}
+  .gp-plhint{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#8A6A50;background:#FFF6ED;border:1px solid #EAD7C2;border-radius:12px;padding:8px 11px;margin:0 0 14px;line-height:1.45}
   .gp-plcard.st-done{opacity:.72}
   .gp-plhead{display:flex;align-items:flex-start;gap:9px}
   .gp-plstatus{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;border-radius:20px;padding:5px 10px;font-size:11.5px;font-weight:800;letter-spacing:.2px}
@@ -708,7 +731,7 @@ function Scheduler({user}){
   const removeActivity=(id)=>db.collection("activities").doc(id).delete();
   const upsertBu=async(x)=>{const p={name:x.name,color:x.color,uid:user.uid};x.id?await db.collection("bus").doc(x.id).set(p):await db.collection("bus").add(p);};
   const removeBu=(id)=>db.collection("bus").doc(id).delete();
-  const saveEvent=async(ev)=>{const p={activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,note:ev.note,done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,priorityLevel:ev.priorityLevel??null,start:ev.start,end:ev.end,uid:user.uid};ev.id?await db.collection("events").doc(ev.id).set(p):await db.collection("events").add(p);};
+  const saveEvent=async(ev)=>{const p={activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,note:ev.note,done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,priorityLevel:ev.priorityLevel??null,start:ev.start,end:ev.end,uid:user.uid};ev.id?await db.collection("events").doc(ev.id).set(p,{merge:true}):await db.collection("events").add(p);};
   const deleteEvent=async(id)=>{await db.collection("events").doc(id).delete();setEditing(null);};
   const reorderPriorities=(ids)=>{const b=db.batch();ids.forEach((id,i)=>b.update(db.collection("events").doc(id),{priority:i}));return b.commit();};
   const setPriorityLevel=(id,level)=>db.collection("events").doc(id).update({priorityLevel:level||null});
@@ -735,7 +758,7 @@ function Scheduler({user}){
       await batch.commit();
     } else {
       const {start,end}=mk(d.startDate);
-      d.id?await db.collection("events").doc(d.id).set({...base,start,end}):await db.collection("events").add({...base,start,end});
+      d.id?await db.collection("events").doc(d.id).set({...base,start,end},{merge:true}):await db.collection("events").add({...base,start,end});
     }
     setEditing(null);
   };
@@ -1114,16 +1137,102 @@ function dueInfo(endISO){
 }
 const stOf=(e)=>e.status||(e.done?"done":"todo");
 
+const PL_GROUPS=[
+  {key:"alta",name:"Priorità alta",dot:"#B4462F"},
+  {key:"media",name:"Priorità media",dot:"#D9A441"},
+  {key:"bassa",name:"Priorità bassa",dot:"#7E9B6E"},
+  {key:"none",name:"Senza priorità",dot:"#C9B9A4"},
+];
+const prioKey=(ev)=>["alta","media","bassa"].includes(ev.prio)?ev.prio:"none";
+const plOrderOf=(ev)=>Number.isFinite(ev.plOrder)?ev.plOrder:1e9;
+
 function PlannerView({events,color,onEvent,onPatch,onNew}){
   const [showDone,setShowDone]=useState(false);
+  const [drag,setDrag]=useState(null);
+  const [over,setOver]=useState(null);
+  const overRef=useRef(null);
+  const groupsRef=useRef(null);
   const today=startOfDay(new Date());
-  const pw={alta:0,media:1,bassa:2};
-  const active=events.filter((e)=>stOf(e)!=="done").sort((a,b)=>{
-    const da=startOfDay(new Date(a.end))-today, db=startOfDay(new Date(b.end))-today;
-    return da-db || ((pw[a.prio]??3)-(pw[b.prio]??3));
-  });
-  const done=events.filter((e)=>stOf(e)==="done").sort((a,b)=>new Date(b.end)-new Date(a.end));
+
+  const active=events.filter((e)=>stOf(e)!=="done");
+  const done=events.filter((e)=>stOf(e)==="done").sort((x,y)=>new Date(y.end)-new Date(x.end));
   const lateN=active.filter((e)=>startOfDay(new Date(e.end))<today).length;
+
+  // raggruppati per priorità; dentro ogni gruppo vale l'ordine manuale, poi la scadenza
+  const groups=useMemo(()=>{
+    const g={alta:[],media:[],bassa:[],none:[]};
+    active.forEach((e)=>g[prioKey(e)].push(e));
+    Object.keys(g).forEach((k)=>g[k].sort((x,y)=>plOrderOf(x)-plOrderOf(y)||new Date(x.end)-new Date(y.end)));
+    return g;
+  },[events]);
+  groupsRef.current=groups;
+
+  const setOverBoth=(v)=>{overRef.current=v;setOver(v);};
+
+  const startDrag=(ev,e)=>{
+    if(e.button!==undefined&&e.button!==0)return;
+    e.preventDefault();e.stopPropagation();
+    const k=prioKey(ev);
+    setDrag({id:ev.id,ev,x:e.clientX,y:e.clientY});
+    setOverBoth({group:k,index:groups[k].findIndex((x)=>x.id===ev.id)});
+  };
+
+  const applyDrop=(d)=>{
+    const t=overRef.current,g=groupsRef.current;
+    if(!d||!t||!g)return;
+    const src=prioKey(d.ev),dst=t.group;
+    const from=g[src].findIndex((x)=>x.id===d.id);
+    const rest=(g[dst]||[]).filter((x)=>x.id!==d.id);
+    let idx=t.index;
+    if(src===dst&&from>-1&&from<t.index)idx--;
+    idx=Math.max(0,Math.min(idx,rest.length));
+    rest.splice(idx,0,d.ev);
+    rest.forEach((e,i)=>{
+      const o=(i+1)*10;const patch={};
+      if(plOrderOf(e)!==o)patch.plOrder=o;
+      if(e.id===d.id&&src!==dst)patch.prio=dst==="none"?null:dst;
+      if(Object.keys(patch).length)onPatch(e.id,patch);
+    });
+  };
+
+  useEffect(()=>{
+    if(!drag)return;
+    const move=(e)=>{
+      const x=e.clientX,y=e.clientY;
+      setDrag((d)=>d?{...d,x,y}:d);
+      const el=document.elementFromPoint(x,y);
+      const card=el&&el.closest?el.closest("[data-plid]"):null;
+      if(card){
+        const r=card.getBoundingClientRect();
+        const inRow=y>=r.top&&y<=r.bottom;
+        const after=inRow?x>r.left+r.width/2:y>r.top+r.height/2;
+        setOverBoth({group:card.dataset.plgroup,index:Number(card.dataset.plindex)+(after?1:0)});
+      }else{
+        const zone=el&&el.closest?el.closest("[data-plzone]"):null;
+        if(zone){
+          const k=zone.dataset.plzone,cur=overRef.current;
+          // dentro lo stesso gruppo tengo la posizione già calcolata (lo spazio vuoto non fa saltare il task in fondo)
+          if(!cur||cur.group!==k)setOverBoth({group:k,index:(groupsRef.current[k]||[]).length});
+        }
+      }
+      const wrap=document.querySelector(".gp-wrap");
+      if(wrap){const r=wrap.getBoundingClientRect();
+        if(y<r.top+70)wrap.scrollTop-=16;else if(y>r.bottom-70)wrap.scrollTop+=16;}
+    };
+    const up=()=>{applyDrop(drag);setDrag(null);setOverBoth(null);};
+    window.addEventListener("pointermove",move,{passive:true});
+    window.addEventListener("pointerup",up);
+    window.addEventListener("pointercancel",up);
+    return ()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);window.removeEventListener("pointercancel",up);};
+  },[drag&&drag.id]);
+
+  const card=(ev,gk,i)=>(
+    <div key={ev.id} data-plid={ev.id} data-plgroup={gk} data-plindex={i}>
+      <PlannerCard ev={ev} pk={gk} color={color} onEvent={onEvent} onPatch={onPatch}
+        dragging={!!drag&&drag.id===ev.id} onGrip={(e)=>startDrag(ev,e)}/>
+    </div>
+  );
+
   return (
     <div className="gp-planner">
       <div className="gp-plsum">
@@ -1134,17 +1243,41 @@ function PlannerView({events,color,onEvent,onPatch,onNew}){
       {events.length===0 ? (
         <div className="gp-panel"><div className="gp-empty">Nessun task di lavoro.<br/><button className="gp-btn solid sm" style={{marginTop:12}} onClick={onNew}><Icon name="plus" size={14}/> Nuovo task</button></div></div>
       ) : (<>
-        <div className="gp-plgrid">{active.map((ev)=><PlannerCard key={ev.id} ev={ev} color={color} onEvent={onEvent} onPatch={onPatch}/>)}</div>
+        <div className="gp-plhint">
+          <Icon name="move" size={16} style={{flexShrink:0,color:"#C75D3A"}}/>
+          <span>Trascina un task dalla maniglia per cambiarne l'ordine. Portandolo in un altro gruppo ne cambi la priorità.</span>
+        </div>
+        {PL_GROUPS.map((G)=>{
+          const list=groups[G.key];
+          if(list.length===0&&!drag)return null;
+          const isOver=!!drag&&over&&over.group===G.key;
+          return (
+            <div key={G.key} className={`gp-plgroup g-${G.key} ${isOver?"is-over":""}`}>
+              <div className="gp-plgroup-h"><span className="gdot" style={{background:G.dot}}/>{G.name}<span className="n">{list.length}</span></div>
+              <div className="gp-plgrid" data-plzone={G.key}>
+                {list.map((ev,i)=>(<React.Fragment key={ev.id}>
+                  {isOver&&over.index===i&&<div className="gp-pldrop"/>}
+                  {card(ev,G.key,i)}
+                </React.Fragment>))}
+                {isOver&&over.index>=list.length&&<div className="gp-pldrop"/>}
+                {list.length===0&&!isOver&&<div className="gp-pldropzone" data-plzone={G.key}>Trascina qui</div>}
+              </div>
+            </div>
+          );
+        })}
         {done.length>0&&<>
           <button className="gp-pldone-tog" onClick={()=>setShowDone((s)=>!s)}><Icon name={showDone?"down":"right"} size={14}/> Completati ({done.length})</button>
-          {showDone&&<div className="gp-plgrid">{done.map((ev)=><PlannerCard key={ev.id} ev={ev} color={color} onEvent={onEvent} onPatch={onPatch}/>)}</div>}
+          {showDone&&<div className="gp-plgrid">{done.map((ev)=><PlannerCard key={ev.id} ev={ev} pk={prioKey(ev)} color={color} onEvent={onEvent} onPatch={onPatch}/>)}</div>}
         </>}
       </>)}
+      {drag&&ReactDOM.createPortal(
+        <div className="gp-plghost" style={{left:drag.x,top:drag.y}}>{drag.ev.title}</div>,
+        document.body)}
     </div>
   );
 }
 
-function PlannerCard({ev,color,onEvent,onPatch}){
+function PlannerCard({ev,pk,color,onEvent,onPatch,dragging,onGrip}){
   const [adding,setAdding]=useState(false);
   const [txt,setTxt]=useState("");
   const [editSubId,setEditSubId]=useState(null);
@@ -1170,8 +1303,9 @@ function PlannerCard({ev,color,onEvent,onPatch}){
   };
   const addSub=()=>{const t=txt.trim();if(!t)return;onPatch(ev.id,{subtasks:[...subs,{id:"st-"+Date.now()+Math.random().toString(36).slice(2,5),text:t,done:false}]});setTxt("");};
   return (
-    <div className={`gp-plcard st-${st}`} style={{borderLeftColor:color}}>
+    <div className={`gp-plcard st-${st} p-${pk||"none"} ${dragging?"dragging":""}`}>
       <div className="gp-plhead">
+        {onGrip&&<button className="gp-plgrip" title="Trascina per spostare" onPointerDown={onGrip}><Icon name="move" size={15}/></button>}
         <button className={`gp-plstatus s-${st}`} onClick={setStatus} title="Tocca per cambiare stato"><Icon name={STM.ic} size={15}/><span className="hide-sm">{STM.lbl}</span></button>
         <button className="gp-pltitle" onClick={()=>onEvent(ev)}><span className={st==="done"?"done":""}>{ev.title}</span>{subs.length>0&&<span className="gp-plsubc">{subDone}/{subs.length}</span>}</button>
         <button className="gp-pledit" onClick={()=>onEvent(ev)} title="Modifica"><Icon name="edit" size={15}/></button>
