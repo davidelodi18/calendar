@@ -1,0 +1,27 @@
+name: Notifiche Giornata
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # ogni 10 minuti (GitHub può ritardare di qualche minuto)
+  workflow_dispatch:          # pulsante "Run workflow" per provarlo subito
+
+concurrency:
+  group: notifiche-giornata
+  cancel-in-progress: false
+
+jobs:
+  invia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Installa Firebase Admin
+        run: npm install --no-save --no-package-lock --no-audit --no-fund firebase-admin@12
+      - name: Invia le notifiche
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          APP_URL: https://davidelodi18.github.io/calendar/
+        run: node "$(find . -name notifiche-giornata.js -not -path './node_modules/*' | head -n 1)"
