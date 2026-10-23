@@ -4,6 +4,14 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>Giornata</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#F7F1E8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Giornata">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -15,6 +23,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -447,6 +456,30 @@
     .gp-plsubdel{opacity:1}
   }
 
+  /* NOTIFICHE */
+  .gp-nt-card{background:#FFFDF8;border:1px solid #E4D7C2;border-radius:13px;padding:14px;margin-bottom:12px}
+  .gp-nt-h{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:#3A2E26;margin-bottom:6px}
+  .gp-nt-p{font-size:12.5px;color:#8A7A6D;font-weight:600;line-height:1.5}
+  .gp-nt-p b{color:#5A4A3D}
+  .gp-nt-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;border-radius:20px;padding:4px 10px;margin-bottom:10px}
+  .gp-nt-status.on{background:#E6F0DE;color:#4A7058}
+  .gp-nt-status.off{background:#F1E9DB;color:#8A7A6D}
+  .gp-nt-status.bad{background:#F8E9E9;color:#9E4444}
+  .gp-nt-banner{background:#FFF6ED;border:1px solid #EAD7C2;border-radius:12px;padding:11px 12px;font-size:12.5px;font-weight:700;color:#8A6A50;line-height:1.5;margin-bottom:12px}
+  .gp-nt-banner ol{padding-left:18px;margin-top:4px}
+  .gp-nt-ok{background:#E6F0DE;border:1px solid #CBE0BC;color:#4A7058;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;margin-bottom:12px}
+  .gp-nt-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .gp-nt-dev{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #F0E7D6;font-size:13px;font-weight:700}
+  .gp-nt-dev:first-of-type{border-top:none}
+  .gp-nt-dev .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gp-nt-dev .me{font-size:10.5px;font-weight:800;color:#C75D3A;background:#FCEDE5;border-radius:20px;padding:1px 8px}
+  .gp-nt-mins{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .gp-nt-mins button{border:1.5px solid #E0D2BC;background:#FFFDF8;border-radius:20px;padding:5px 11px;font-size:12.5px;font-weight:700;color:#5A4A3D;cursor:pointer;font-family:inherit}
+  .gp-nt-mins button.on{border-color:#C75D3A;background:#FFF6ED;color:#C75D3A}
+  .gp-nt-time{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;font-weight:700;color:#5A4A3D}
+  .gp-nt-time .gp-input{max-width:130px}
+  .gp-nt-last{font-size:11.5px;font-weight:700;color:#A89683;margin-top:8px}
+
   /* BARRA IN BASSO (solo cellulare) */
   .gp-bottomnav{display:none}
 
@@ -591,6 +624,52 @@ const db = firebase.firestore();
 
 const { useState, useEffect, useRef, useMemo } = React;
 
+/* ================= APP INSTALLABILE + NOTIFICHE PUSH ================= */
+const VAPID_KEY="BBsTB5it-7qRX54uHdjDE__7hoaggX3H4QfPrw0Ene3f4X4p0Lv5ASPrS_1NYb8O9DATS0glIY4nQpEVE7Iy8YM"; // chiave pubblica web push (Firebase → Cloud Messaging)
+const PUSH_DEFAULTS={startAlerts:true,leadMin:15,digest:true,digestTime:"07:30",vapidKey:VAPID_KEY};
+const LS_TOKEN="gp-push-token";
+const lsGet=(k)=>{try{return localStorage.getItem(k);}catch(e){return null;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+const lsDel=(k)=>{try{localStorage.removeItem(k);}catch(e){}};
+const tokenDocId=(t)=>t.replace(/\//g,"_");
+const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const isStandalone=()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
+function deviceName(){
+  const u=navigator.userAgent;
+  const os=/iphone/i.test(u)?"iPhone":/ipad/i.test(u)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1)?"iPad":/android/i.test(u)?"Android":/mac/i.test(u)?"Mac":/windows/i.test(u)?"Windows":"Dispositivo";
+  const br=/edg\//i.test(u)?"Edge":/firefox|fxios/i.test(u)?"Firefox":/crios|chrome/i.test(u)?"Chrome":/safari/i.test(u)?"Safari":"";
+  return isStandalone()?`${os} · app`:`${os}${br?" · "+br:""}`;
+}
+let swRegPromise=null;
+function getSwReg(){
+  if(!("serviceWorker" in navigator))return Promise.resolve(null);
+  if(!swRegPromise)swRegPromise=navigator.serviceWorker.register("./sw.js").then(()=>navigator.serviceWorker.ready).catch((e)=>{console.warn("SW",e);swRegPromise=null;return null;});
+  return swRegPromise;
+}
+let messagingInst=null;
+async function getMessaging(){
+  if(messagingInst)return messagingInst;
+  try{
+    if(!firebase.messaging)return null;
+    const ok=await Promise.resolve(firebase.messaging.isSupported());
+    if(!ok)return null;
+    messagingInst=firebase.messaging();
+    return messagingInst;
+  }catch(e){return null;}
+}
+async function registerPushToken(uid,vapidKey){
+  const reg=await getSwReg();if(!reg)throw new Error("Questo browser non supporta le app installabili.");
+  const m=await getMessaging();if(!m)throw new Error("Su questo browser le notifiche push non sono supportate.");
+  const token=await m.getToken({vapidKey,serviceWorkerRegistration:reg});
+  if(!token)throw new Error("Firebase non ha restituito il codice del dispositivo.");
+  await db.collection("pushTokens").doc(tokenDocId(token)).set({uid,token,device:deviceName(),ua:navigator.userAgent.slice(0,180),updatedAt:Date.now()},{merge:true});
+  const old=lsGet(LS_TOKEN);
+  if(old&&old!==token)db.collection("pushTokens").doc(tokenDocId(old)).delete().catch(()=>{});
+  lsSet(LS_TOKEN,token);
+  return token;
+}
+getSwReg();
+
 /* true quando lo schermo è da cellulare (stessa soglia del CSS) */
 function useMedia(q){
   const [m,setM]=useState(()=>window.matchMedia(q).matches);
@@ -724,6 +803,26 @@ function Scheduler({user}){
     return ()=>{a();e();b();r();};
   },[user.uid]);
 
+  /* notifiche: con l'app aperta le mostro io; ad ogni avvio rinnovo il codice del dispositivo */
+  useEffect(()=>{
+    let unsub=null,alive=true;
+    (async()=>{
+      const m=await getMessaging();if(!m||!alive)return;
+      unsub=m.onMessage(async(p)=>{
+        const n=p.notification||{},d=p.data||{};
+        const reg=await getSwReg();
+        if(reg&&typeof Notification!=="undefined"&&Notification.permission==="granted")
+          reg.showNotification(n.title||"Giornata",{body:n.body||"",icon:"icon-192.png",badge:"icon-192.png",tag:d.tag||undefined,data:{url:d.url||location.href}});
+      });
+      if(lsGet(LS_TOKEN)&&typeof Notification!=="undefined"&&Notification.permission==="granted"){
+        let k=VAPID_KEY;
+        try{const s=await db.collection("pushSettings").doc(user.uid).get();if(s.exists&&s.data().vapidKey)k=s.data().vapidKey;}catch(e){}
+        try{await registerPushToken(user.uid,k);}catch(e){console.warn("Rinnovo notifiche",e);}
+      }
+    })();
+    return ()=>{alive=false;if(typeof unsub==="function")unsub();};
+  },[user.uid]);
+
   /* CRUD */
   const seedActivities=async()=>{const b=db.batch();DEFAULT_ACTIVITIES.forEach((a)=>b.set(db.collection("activities").doc(),{...a,buId:null,uid:user.uid}));await b.commit();};
   const seedBus=async()=>{const b=db.batch();DEFAULT_BUS.forEach((x)=>b.set(db.collection("bus").doc(),{...x,uid:user.uid}));await b.commit();};
@@ -743,7 +842,7 @@ function Scheduler({user}){
     return db.collection("events").doc(ev.id).update(patch);
   };
   const submitEvent=async(d)=>{
-    const base={activityId:d.activityId,buId:d.buId||null,title:(d.title.trim()||"Senza titolo"),color:d.color,note:d.note,done:!!d.done,inCalendar:d.inCalendar!==false,inGantt:d.inGantt!==false,inPlanner:d.inPlanner!==false,priority:d.priority??null,priorityLevel:d.priorityLevel??null,prio:d.prio??null,status:d.status||(d.done?"done":"todo"),subtasks:d.subtasks||[],uid:user.uid};
+    const base={activityId:d.activityId,buId:d.buId||null,title:(d.title.trim()||"Senza titolo"),color:d.color,note:d.note,done:!!d.done,inCalendar:d.inCalendar!==false,inGantt:d.inGantt!==false,inPlanner:d.inPlanner!==false,priority:d.priority??null,priorityLevel:d.priorityLevel??null,prio:d.prio??null,status:d.status||(d.done?"done":"todo"),subtasks:d.subtasks||[],notify:d.notify!==false,uid:user.uid};
     const deltaDays=daysBetween(fromDateKey(d.startDate),fromDateKey(d.endDate));
     const mk=(dayKey)=>{const start=combine(dayKey,d.startTime);let end=combine(toDateKey(addDays(fromDateKey(dayKey),deltaDays)),d.endTime);if(end<=start)end=new Date(start.getTime()+30*60000);return {start:start.toISOString(),end:end.toISOString()};};
     if(d._isNew && d.repeat && d.repeat!=="none"){
@@ -759,6 +858,11 @@ function Scheduler({user}){
     } else {
       const {start,end}=mk(d.startDate);
       d.id?await db.collection("events").doc(d.id).set({...base,start,end},{merge:true}):await db.collection("events").add({...base,start,end});
+      // l'avviso acceso/spento su un impegno ricorrente vale per tutta la serie
+      if(d.id&&d.seriesId&&(d.notify!==false)!==(d._origNotify!==false)){
+        const qs=await db.collection("events").where("uid","==",user.uid).where("seriesId","==",d.seriesId).get();
+        const b=db.batch();qs.docs.slice(0,450).forEach((doc)=>b.update(doc.ref,{notify:d.notify!==false}));await b.commit();
+      }
     }
     setEditing(null);
   };
@@ -800,12 +904,12 @@ function Scheduler({user}){
   const newEventAt=(dateKey,hour,minute=0,activity=null)=>{
     const endMin=minute+(activity?.dur??60);let eh=hour+Math.floor(endMin/60),em=endMin%60;if(eh>=24){eh=23;em=59;}
     const bu0=activity?.buId??defaultBu();
-    setEditing({id:null,activityId:activity?.id??null,buId:bu0,title:activity?.name??"",color:activity?.color??(bu0&&buMap[bu0]?buMap[bu0].color:PALETTE[0]),startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:true,inGantt:true,inPlanner:true,priority:null,priorityLevel:null,prio:null,status:"todo",subtasks:[],repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
+    setEditing({id:null,activityId:activity?.id??null,buId:bu0,title:activity?.name??"",color:activity?.color??(bu0&&buMap[bu0]?buMap[bu0].color:PALETTE[0]),startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:true,inGantt:true,inPlanner:true,priority:null,priorityLevel:null,prio:null,status:"todo",subtasks:[],notify:true,repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
   };
-  const openEvent=(ev)=>{const s=new Date(ev.start),e=new Date(ev.end);setEditing({id:ev.id,activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,startDate:toDateKey(s),startTime:timeStr(s),endDate:toDateKey(e),endTime:timeStr(e),note:ev.note||"",done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,inPlanner:showInPlanner(ev),priority:ev.priority??null,priorityLevel:ev.priorityLevel??null,prio:ev.prio??null,status:ev.status||(ev.done?"done":"todo"),subtasks:ev.subtasks||[],_isNew:false});};
+  const openEvent=(ev)=>{const s=new Date(ev.start),e=new Date(ev.end);setEditing({id:ev.id,activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,startDate:toDateKey(s),startTime:timeStr(s),endDate:toDateKey(e),endTime:timeStr(e),note:ev.note||"",done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,inPlanner:showInPlanner(ev),priority:ev.priority??null,priorityLevel:ev.priorityLevel??null,prio:ev.prio??null,status:ev.status||(ev.done?"done":"todo"),subtasks:ev.subtasks||[],notify:ev.notify!==false,_origNotify:ev.notify!==false,seriesId:ev.seriesId||null,_isNew:false});};
   const newEventWithBu=(dateKey,hour,minute=0,buId=null,dur=60,opts={})=>{
     const endMin=minute+dur;let eh=hour+Math.floor(endMin/60),em=endMin%60;if(eh>=24){eh=23;em=59;}
-    setEditing({id:null,activityId:null,buId:buId||null,title:"",color:(buId&&buMap[buId]?buMap[buId].color:PALETTE[4]),startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:opts.plannerOnly?false:true,inGantt:opts.plannerOnly?false:true,inPlanner:true,priority:null,priorityLevel:null,prio:null,status:"todo",subtasks:[],repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
+    setEditing({id:null,activityId:null,buId:buId||null,title:"",color:(buId&&buMap[buId]?buMap[buId].color:PALETTE[4]),startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:opts.plannerOnly?false:true,inGantt:opts.plannerOnly?false:true,inPlanner:true,priority:null,priorityLevel:null,prio:null,status:"todo",subtasks:[],notify:true,repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
   };
 
   const VIEWS=[["day","Giorno","calendar"],["week","Settimana","calendar"],["month","Mese","grid"],["gantt","Gantt","gantt"],["lavoro","Lavoro","briefcase"],["priority","Priorità","flag"],["reminders","Promemoria","bell"],["archive","Archivio","archive"]];
@@ -830,6 +934,7 @@ function Scheduler({user}){
           </select>)}
         </div>}
         <div className="gp-actions">
+          <button className="gp-icon hide-sm" title="Notifiche" onClick={()=>setManage("notify")}><Icon name="bell" size={17}/></button>
           <button className="gp-icon" title="Gestisci attività e BU" onClick={()=>setManage("activities")}><Icon name="settings" size={17}/></button>
           <button className="gp-btn solid" title="Nuovo impegno" onClick={()=>newEventAt(toDateKey(view==="day"||view==="month"?cursor:new Date()),new Date().getHours())}><Icon name="plus" size={16}/> <span className="hide-sm">Nuovo</span></button>
           <button className="gp-icon" title="Esci" onClick={()=>auth.signOut()}><Icon name="logout" size={16}/></button>
@@ -868,12 +973,13 @@ function Scheduler({user}){
           <div className="gp-sheet-h"><span className="nm">Altre sezioni</span><button className="gp-icon" onClick={()=>setMoreOpen(false)}><Icon name="x"/></button></div>
           <div className="gp-lvlgrid" style={{marginTop:14}}>
             {MOBILE_MORE.map((v)=>(<button key={v} className={`gp-lvlbtn ${view===v?"on":""}`} onClick={()=>{setView(v);setMoreOpen(false);}}><Icon name={VMAP[v].ic} size={17}/>{VMAP[v].lbl}</button>))}
+            <button className="gp-lvlbtn" onClick={()=>{setMoreOpen(false);setManage("notify");}}><Icon name="bell" size={17}/>Notifiche</button>
             <button className="gp-lvlbtn" onClick={()=>{setMoreOpen(false);setManage("activities");}}><Icon name="settings" size={17}/>Gestione</button>
           </div>
         </div>
       </div>}
 
-      {manage && <ManageDrawer tab={manage} setTab={setManage} activities={activities} bus={bus} buMap={buMap}
+      {manage && <ManageDrawer user={user} tab={manage} setTab={setManage} activities={activities} bus={bus} buMap={buMap}
         onClose={()=>setManage(null)} onUpsertAct={upsertActivity} onRemoveAct={removeActivity} onSeedAct={seedActivities}
         onUpsertBu={upsertBu} onRemoveBu={removeBu} onSeedBu={seedBus}
         onUse={(a)=>{setManage(null);newEventAt(toDateKey(view==="day"||view==="month"?cursor:new Date()),new Date().getHours(),0,a);}}/>}
@@ -1687,7 +1793,7 @@ function ArchiveView({events,buMap,onEvent,onToggle,onDelete}){
 }
 
 /* ---- Drawer gestione (Attività + BU) ---- */
-function ManageDrawer({tab,setTab,activities,bus,buMap,onClose,onUpsertAct,onRemoveAct,onSeedAct,onUpsertBu,onRemoveBu,onSeedBu,onUse}){
+function ManageDrawer({user,tab,setTab,activities,bus,buMap,onClose,onUpsertAct,onRemoveAct,onSeedAct,onUpsertBu,onRemoveBu,onSeedBu,onUse}){
   const [draft,setDraft]=useState(null);
   const newAct=()=>setDraft({kind:"act",id:null,name:"",color:PALETTE[0],dur:60,buId:null});
   const newBu=()=>setDraft({kind:"bu",id:null,name:"",color:PALETTE[2]});
@@ -1699,7 +1805,10 @@ function ManageDrawer({tab,setTab,activities,bus,buMap,onClose,onUpsertAct,onRem
         <div className="gp-tabs">
           <button className={tab==="activities"?"on":""} onClick={()=>switchTab("activities")}>Attività</button>
           <button className={tab==="bu"?"on":""} onClick={()=>switchTab("bu")}>Business Unit</button>
+          <button className={tab==="notify"?"on":""} onClick={()=>switchTab("notify")}>Notifiche</button>
         </div>
+
+        {tab==="notify" && <NotifyPanel user={user}/>}
 
         {tab==="activities" && (<>
           <p className="gp-hint">Le attività ricorrenti: toccale per inserirle nel calendario. Puoi assegnarle a una BU.</p>
@@ -1753,6 +1862,143 @@ function ManageDrawer({tab,setTab,activities,bus,buMap,onClose,onUpsertAct,onRem
       </aside>
     </div>
   );
+}
+
+/* ---- Pannello notifiche ---- */
+function NotifyPanel({user}){
+  const [s,setS]=useState(null);
+  const [supported,setSupported]=useState(null);
+  const [myToken,setMyToken]=useState(()=>lsGet(LS_TOKEN));
+  const [devices,setDevices]=useState([]);
+  const [busy,setBusy]=useState(false),[msg,setMsg]=useState(""),[err,setErr]=useState("");
+  const [keyDraft,setKeyDraft]=useState("");
+  const [showKey,setShowKey]=useState(false);
+  const sref=db.collection("pushSettings").doc(user.uid);
+
+  useEffect(()=>{
+    // le regole Firestore permettono di leggere solo documenti con il proprio uid: lo creo prima di ascoltarlo
+    let unsub=()=>{},alive=true;
+    sref.set({uid:user.uid},{merge:true}).catch(()=>{}).then(()=>{
+      if(!alive)return;
+      unsub=sref.onSnapshot((d)=>setS({...PUSH_DEFAULTS,...(d.exists?d.data():{})}),(e)=>{setS({...PUSH_DEFAULTS});setErr("Non riesco a leggere le impostazioni ("+(e.code||e.message)+").");});
+    });
+    return ()=>{alive=false;unsub();};
+  },[user.uid]);
+  useEffect(()=>db.collection("pushTokens").where("uid","==",user.uid).onSnapshot((q)=>setDevices(q.docs.map((d)=>({id:d.id,...d.data()}))),()=>{}),[user.uid]);
+  useEffect(()=>{getMessaging().then((m)=>setSupported(!!m));},[]);
+
+  const save=(patch)=>sref.set({...patch,uid:user.uid},{merge:true}).catch((e)=>setErr("Non riesco a salvare: "+(e.code||e.message)));
+  const ios=isIOS(),standalone=isStandalone();
+  const perm=typeof Notification!=="undefined"?Notification.permission:"unsupported";
+  const activeHere=!!myToken&&perm==="granted"&&devices.some((d)=>d.token===myToken);
+
+  const enable=async()=>{
+    setErr("");setMsg("");
+    const key=(s&&s.vapidKey)||"";
+    if(!key){setErr("Prima incolla la chiave web push qui sopra.");return;}
+    if(typeof Notification==="undefined"){setErr("Questo browser non gestisce le notifiche.");return;}
+    setBusy(true);
+    try{
+      const p=await Notification.requestPermission();
+      if(p!=="granted")throw new Error(p==="denied"?"Le notifiche per Giornata sono bloccate: riattivale dalle impostazioni del telefono (o del browser) e riprova.":"Permesso non concesso.");
+      const t=await registerPushToken(user.uid,key);
+      setMyToken(t);setMsg("Fatto: questo dispositivo riceverà le notifiche.");
+    }catch(e){setErr(e.message||String(e));}
+    finally{setBusy(false);}
+  };
+  const disable=async()=>{
+    setErr("");setMsg("");setBusy(true);
+    try{
+      if(myToken)await db.collection("pushTokens").doc(tokenDocId(myToken)).delete().catch(()=>{});
+      const m=await getMessaging();if(m){try{await m.deleteToken();}catch(e){}}
+      lsDel(LS_TOKEN);setMyToken(null);setMsg("Notifiche disattivate su questo dispositivo.");
+    }finally{setBusy(false);}
+  };
+  const localTest=async()=>{
+    setErr("");const reg=await getSwReg();
+    if(!reg||perm!=="granted"){setErr("Prima attiva le notifiche su questo dispositivo.");return;}
+    reg.showNotification("Giornata",{body:"Notifica di prova: su questo dispositivo funzionano ✅",icon:"icon-192.png",badge:"icon-192.png",tag:"prova-locale",data:{url:location.href}});
+  };
+  const fullTest=()=>{setErr("");save({testPending:true});setMsg("Richiesta inviata: la notifica di prova arriva al prossimo controllo automatico, di solito entro 10–15 minuti. Puoi anche chiudere l'app.");};
+  const removeDevice=(d)=>db.collection("pushTokens").doc(d.id).delete();
+  const saveKey=()=>{const k=keyDraft.trim();if(!k)return;save({vapidKey:k});setKeyDraft("");setShowKey(false);setMsg("Chiave salvata. Ora attiva le notifiche su questo dispositivo.");};
+
+  if(!s)return <div className="gp-empty">Carico…</div>;
+  const fmt=(ms)=>{const d=new Date(ms);return `${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)} alle ${timeStr(d)}`;};
+  const MINS=[5,10,15,30,60];
+
+  return (<>
+    <p className="gp-hint">Giornata ti avvisa prima degli impegni e ogni mattina ti manda il riepilogo della giornata, anche ad app chiusa.</p>
+    {err&&<div className="gp-err">{err}</div>}
+    {msg&&<div className="gp-nt-ok">{msg}</div>}
+
+    {ios&&!standalone&&(
+      <div className="gp-nt-banner">
+        Su iPhone le notifiche funzionano solo se Giornata è installata come app:
+        <ol><li>in Safari tocca <b>Condividi</b> (il quadrato con la freccia)</li><li>scegli <b>Aggiungi alla schermata Home</b></li><li>apri Giornata dall'icona e torna qui</li></ol>
+      </div>
+    )}
+
+    {(!s.vapidKey||showKey)&&(
+      <div className="gp-nt-card">
+        <div className="gp-nt-h"><Icon name="settings" size={15}/> Configurazione iniziale (una volta sola)</div>
+        <p className="gp-nt-p">Incolla la <b>chiave web push</b> di Firebase: Impostazioni progetto → Cloud Messaging → Certificati push web.</p>
+        <div className="gp-nt-btns">
+          <input className="gp-input" placeholder="Chiave (inizia di solito con B…)" value={keyDraft} onChange={(e)=>setKeyDraft(e.target.value)}/>
+          <button className="gp-btn solid sm" disabled={!keyDraft.trim()} onClick={saveKey}><Icon name="check" size={14}/> Salva chiave</button>
+          {showKey&&<button className="gp-btn ghost sm" onClick={()=>setShowKey(false)}>Annulla</button>}
+        </div>
+      </div>
+    )}
+
+    <div className="gp-nt-card">
+      <div className="gp-nt-h"><Icon name="bell" size={15}/> Questo dispositivo</div>
+      {supported===false
+        ? <span className="gp-nt-status bad"><Icon name="x" size={12}/> Notifiche non supportate qui</span>
+        : perm==="denied"
+          ? <span className="gp-nt-status bad"><Icon name="x" size={12}/> Bloccate nelle impostazioni</span>
+          : activeHere
+            ? <span className="gp-nt-status on"><Icon name="check" size={12}/> Notifiche attive</span>
+            : <span className="gp-nt-status off"><Icon name="circle" size={12}/> Non attive</span>}
+      {supported===false&&<p className="gp-nt-p">{ios?"Apri Giornata dall'icona sulla schermata Home (vedi sopra).":"Prova con Chrome, Edge o Safari aggiornati."}</p>}
+      <div className="gp-nt-btns">
+        {!activeHere
+          ? <button className="gp-btn solid sm" disabled={busy||supported===false||!s.vapidKey} onClick={enable}><Icon name="bell" size={14}/> {busy?"Attendi…":"Attiva notifiche"}</button>
+          : <>
+              <button className="gp-btn ghost sm" onClick={localTest}><Icon name="bell" size={14}/> Prova subito</button>
+              <button className="gp-btn ghost sm" disabled={s.testPending} onClick={fullTest}><Icon name="hourglass" size={14}/> {s.testPending?"Prova in arrivo…":"Prova completa"}</button>
+              <button className="gp-btn ghost danger sm" disabled={busy} onClick={disable}>Disattiva</button>
+            </>}
+      </div>
+      {activeHere&&<p className="gp-nt-p" style={{marginTop:8}}><b>Prova subito</b> controlla il telefono; <b>Prova completa</b> controlla anche l'invio automatico (arriva entro ~15 minuti).</p>}
+    </div>
+
+    <div className="gp-nt-card">
+      <div className={`gp-toggle ${s.startAlerts?"on":""}`} onClick={()=>save({startAlerts:!s.startAlerts})}><div className="sw"/><span className="txt">Avviso prima di ogni impegno</span></div>
+      {s.startAlerts&&<div className="gp-nt-mins">{MINS.map((m)=>(<button key={m} className={Number(s.leadMin)===m?"on":""} onClick={()=>save({leadMin:m})}>{m<60?`${m} min`:"1 ora"} prima</button>))}</div>}
+      <p className="gp-nt-p" style={{marginTop:8}}>Vale per gli impegni in calendario. Puoi spegnerlo per un singolo impegno (o per tutta una serie ricorrente) dalla sua scheda.</p>
+      <div className={`gp-toggle ${s.digest?"on":""}`} style={{marginTop:12}} onClick={()=>save({digest:!s.digest})}><div className="sw"/><span className="txt">Riepilogo del mattino</span></div>
+      {s.digest&&<div className="gp-nt-time">Alle <input className="gp-input" type="time" value={s.digestTime||"07:30"} onChange={(e)=>e.target.value&&save({digestTime:e.target.value})}/></div>}
+      <p className="gp-nt-p" style={{marginTop:8}}>Impegni del giorno, Top 3, task in ritardo e promemoria in scadenza.</p>
+    </div>
+
+    <div className="gp-nt-card">
+      <div className="gp-nt-h"><Icon name="layers" size={15}/> Dispositivi collegati ({devices.length})</div>
+      {devices.length===0&&<p className="gp-nt-p">Nessuno per ora.</p>}
+      {devices.map((d)=>(
+        <div key={d.id} className="gp-nt-dev">
+          <span className="nm">{d.device||"Dispositivo"}</span>
+          {d.token===myToken&&<span className="me">questo</span>}
+          <button className="gp-icon sm danger" style={{height:32}} title="Scollega" onClick={()=>removeDevice(d)}><Icon name="trash" size={14}/></button>
+        </div>
+      ))}
+      <div className="gp-nt-last">
+        {s.lastRun?`Ultimo controllo automatico: ${fmt(s.lastRun)}`:"Il controllo automatico non è ancora partito."}
+        {s.lastError&&<><br/><span style={{color:"#9E4444"}}>Ultimo errore: {s.lastError}</span></>}
+      </div>
+      {s.vapidKey&&!showKey&&<button className="gp-btn ghost sm" style={{marginTop:10}} onClick={()=>setShowKey(true)}>Cambia chiave web push</button>}
+    </div>
+  </>);
 }
 
 /* ---- Modal evento ---- */
@@ -1847,6 +2093,7 @@ function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete}){
           <div className={`gp-toggle ${draft.inCalendar!==false?"on":""}`} onClick={()=>set({inCalendar:draft.inCalendar===false})}><div className="sw"/><span className="txt">Nel calendario (Giorno · Settimana · Mese)</span></div>
           <div className={`gp-toggle ${draft.inGantt!==false?"on":""}`} onClick={()=>set({inGantt:draft.inGantt===false})}><div className="sw"/><span className="txt">Nel Gantt</span></div>
           <div className={`gp-toggle ${draft.inPlanner!==false?"on":""}`} onClick={()=>set({inPlanner:draft.inPlanner===false})}><div className="sw"/><span className="txt">Nel Planner (sezione Lavoro)</span></div>
+          {draft.inCalendar!==false&&<div className={`gp-toggle ${draft.notify!==false?"on":""}`} onClick={()=>set({notify:draft.notify===false})}><div className="sw"/><span className="txt"><Icon name="bell" size={14} style={{marginRight:6,verticalAlign:"-2px"}}/>Notifica prima dell'inizio{draft.seriesId?" (per tutta la serie)":""}</span></div>}
           {draft.inCalendar===false&&draft.inGantt===false&&draft.inPlanner===false&&
             <div className="gp-warn"><Icon name="flag" size={13}/> Con tutti gli interruttori spenti il task non comparirà da nessuna parte.</div>}
           <label className="gp-lbl"><Icon name="note" size={13} style={{marginRight:5}}/>Note</label>
