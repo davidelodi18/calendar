@@ -144,6 +144,20 @@ async function main() {
   const to = new Date(now.getTime() + (MAX_LEAD + TICK) * 60000).toISOString();
   const winSnap = await db.collection("events").where("start", ">=", from).where("start", "<=", to).get();
   const windowEvents = winSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  // registro per capire cosa vede lo script (niente titoli: i log sono visibili)
+  console.log(`Impegni nella finestra ${hm(new Date(from))}–${hm(new Date(to))}: ${windowEvents.length}`);
+  windowEvents.forEach((e) => console.log(`  · ${hm(new Date(e.start))} cal=${e.inCalendar !== false} notifica=${e.notify !== false} fatto=${isDone(e)} mio=${uids.includes(e.uid)}`));
+
+  // prova lanciata a mano da Actions ("Run workflow" con la casella spuntata): impegno finto, non salvato nel calendario
+  if (process.env.PROVA_EVENTO === "true") {
+    for (const uid of uids) {
+      const ps = await db.collection("pushSettings").doc(uid).get();
+      const lead = Number((ps.exists && ps.data().leadMin) || DEFAULTS.leadMin);
+      const st = new Date(Math.ceil((now.getTime() + lead * 60000) / 60000) * 60000);
+      windowEvents.push({ id: `prova-${now.getTime()}`, uid, title: "Impegno di prova", start: st.toISOString(), end: new Date(st.getTime() + 30 * 60000).toISOString(), inCalendar: true, notify: true });
+      console.log(`Aggiunto impegno di prova alle ${hm(st)}`);
+    }
+  }
 
   for (const uid of uids) {
     try { await runUser(uid, byUid[uid], now, windowEvents); }
