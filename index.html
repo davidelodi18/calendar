@@ -626,7 +626,7 @@ const { useState, useEffect, useRef, useMemo } = React;
 
 /* ================= APP INSTALLABILE + NOTIFICHE PUSH ================= */
 const VAPID_KEY="BBsTB5it-7qRX54uHdjDE__7hoaggX3H4QfPrw0Ene3f4X4p0Lv5ASPrS_1NYb8O9DATS0glIY4nQpEVE7Iy8YM"; // chiave pubblica web push (Firebase → Cloud Messaging)
-const PUSH_DEFAULTS={startAlerts:true,leadMin:15,digest:true,digestTime:"07:30",vapidKey:VAPID_KEY};
+const PUSH_DEFAULTS={startAlerts:true,leadMin:15,dueAlerts:true,dueLead:1440,digest:true,digestTime:"07:30",vapidKey:VAPID_KEY};
 const LS_TOKEN="gp-push-token";
 const lsGet=(k)=>{try{return localStorage.getItem(k);}catch(e){return null;}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
@@ -1994,9 +1994,12 @@ function NotifyPanel({user}){
       <div className={`gp-toggle ${s.startAlerts?"on":""}`} onClick={()=>save({startAlerts:!s.startAlerts})}><div className="sw"/><span className="txt">Avviso prima di ogni impegno</span></div>
       {s.startAlerts&&<div className="gp-nt-mins">{MINS.map((m)=>(<button key={m} className={Number(s.leadMin)===m?"on":""} onClick={()=>save({leadMin:m})}>{m<60?`${m} min`:"1 ora"} prima</button>))}</div>}
       <p className="gp-nt-p" style={{marginTop:8}}>Vale per gli impegni in calendario. Puoi spegnerlo per un singolo impegno (o per tutta una serie ricorrente) dalla sua scheda.</p>
+      <div className={`gp-toggle ${s.dueAlerts!==false?"on":""}`} style={{marginTop:12}} onClick={()=>save({dueAlerts:s.dueAlerts===false})}><div className="sw"/><span className="txt">Avviso prima delle scadenze</span></div>
+      {s.dueAlerts!==false&&<div className="gp-nt-mins">{[[60,"1 ora"],[180,"3 ore"],[1440,"1 giorno"]].map(([m,l])=>(<button key={m} className={Number(s.dueLead||1440)===m?"on":""} onClick={()=>save({dueLead:m})}>{l} prima</button>))}</div>}
+      <p className="gp-nt-p" style={{marginTop:8}}>Vale per le attività fuori calendario (Planner, Lavoro, Gantt) e per quelle che durano più giorni: ti avvisa prima della data di Fine / Scadenza.</p>
       <div className={`gp-toggle ${s.digest?"on":""}`} style={{marginTop:12}} onClick={()=>save({digest:!s.digest})}><div className="sw"/><span className="txt">Riepilogo del mattino</span></div>
       {s.digest&&<div className="gp-nt-time">Alle <input className="gp-input" type="time" value={s.digestTime||"07:30"} onChange={(e)=>e.target.value&&save({digestTime:e.target.value})}/></div>}
-      <p className="gp-nt-p" style={{marginTop:8}}>Impegni del giorno, Top 3, task in ritardo e promemoria in scadenza.</p>
+      <p className="gp-nt-p" style={{marginTop:8}}>Impegni del giorno, Top 3, scadenze di oggi, task in ritardo e promemoria in scadenza.</p>
     </div>
 
     <div className="gp-nt-card">
@@ -2110,7 +2113,7 @@ function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete}){
           <div className={`gp-toggle ${draft.inCalendar!==false?"on":""}`} onClick={()=>set({inCalendar:draft.inCalendar===false})}><div className="sw"/><span className="txt">Nel calendario (Giorno · Settimana · Mese)</span></div>
           <div className={`gp-toggle ${draft.inGantt!==false?"on":""}`} onClick={()=>set({inGantt:draft.inGantt===false})}><div className="sw"/><span className="txt">Nel Gantt</span></div>
           <div className={`gp-toggle ${draft.inPlanner!==false?"on":""}`} onClick={()=>set({inPlanner:draft.inPlanner===false})}><div className="sw"/><span className="txt">Nel Planner (sezione Lavoro)</span></div>
-          {draft.inCalendar!==false&&<div className={`gp-toggle ${draft.notify!==false?"on":""}`} onClick={()=>set({notify:draft.notify===false})}><div className="sw"/><span className="txt"><Icon name="bell" size={14} style={{marginRight:6,verticalAlign:"-2px"}}/>Notifica prima dell'inizio{draft.seriesId?" (per tutta la serie)":""}</span></div>}
+          <div className={`gp-toggle ${draft.notify!==false?"on":""}`} onClick={()=>set({notify:draft.notify===false})}><div className="sw"/><span className="txt"><Icon name="bell" size={14} style={{marginRight:6,verticalAlign:"-2px"}}/>{draft.inCalendar===false?"Notifica prima della scadenza":multiDay?"Notifica prima dell'inizio e della scadenza":"Notifica prima dell'inizio"}{draft.seriesId?" (per tutta la serie)":""}</span></div>
           {draft.inCalendar===false&&draft.inGantt===false&&draft.inPlanner===false&&
             <div className="gp-warn"><Icon name="flag" size={13}/> Con tutti gli interruttori spenti il task non comparirà da nessuna parte.</div>}
           <label className="gp-lbl"><Icon name="note" size={13} style={{marginRight:5}}/>Note</label>
