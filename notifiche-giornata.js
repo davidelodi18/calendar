@@ -10,7 +10,8 @@ const TZ = "Europe/Rome";
 const APP_URL = (process.env.APP_URL || "https://davidelodi18.github.io/calendar/").replace(/\/?$/, "/");
 const TICK = 10;          // minuti tra un controllo e l'altro (come nel workflow)
 const MAX_LEAD = 60;      // anticipo massimo selezionabile nell'app
-const DEFAULTS = { startAlerts: true, leadMin: 15, digest: true, digestTime: "07:30" };
+const MAX_DUE = 1440;     // anticipo massimo per le scadenze (1 giorno)
+const DEFAULTS = { startAlerts: true, leadMin: 15, dueAlerts: true, dueLead: 1440, digest: true, digestTime: "07:30" };
 
 let sa;
 try { sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || ""); } catch (e) { sa = null; }
@@ -31,6 +32,8 @@ const longDay = (d) => { const s = new Intl.DateTimeFormat("it-IT", { timeZone: 
 const isDone = (e) => !!e.done || e.status === "done";
 const showInPlanner = (e) => (e.inPlanner === undefined || e.inPlanner === null) ? (e.inGantt !== false) : (e.inPlanner !== false);
 const inBoard = (e) => e.inGantt !== false || showInPlanner(e);
+// ha una scadenza vera: attività fuori calendario (Planner, Lavoro, Gantt) o che dura più giorni
+const hasDeadline = (e) => e.inCalendar === false || dayKey(new Date(e.start)) !== dayKey(new Date(new Date(e.end).getTime() - 1));
 const overlapsDay = (e, k) => dayKey(new Date(e.start)) <= k && dayKey(new Date(new Date(e.end).getTime() - 1)) >= k;
 const list = (arr, n = 3) => arr.slice(0, n).join(", ") + (arr.length > n ? ` (+${arr.length - n})` : "");
 
@@ -62,7 +65,7 @@ async function send(tokens, { title, body, tag }) {
   return ok;
 }
 
-async function runUser(uid, tokens, now, windowEvents) {
+async function runUser(uid, tokens, now, windowEvents, dueEvents) {
   const sref = db.collection("pushSettings").doc(uid);
   const snap = await sref.get();
   const s = { ...DEFAULTS, ...(snap.exists ? snap.data() : {}) };
@@ -93,6 +96,24 @@ async function runUser(uid, tokens, now, windowEvents) {
     }
   }
 
+  /* 2b. avviso prima delle scadenze */
+  if (s.dueAlerts) {
+    const lead = Math.min(MAX_DUE, Math.max(0, Number(s.dueLead) || 1440));
+    const today = dayKey(now), tomorrow = dayKey(new Date(now.getTime() + 86400000));
+    for (const ev of dueEvents) {
+      if (ev.uid !== uid || isDone(ev) || ev.notify === false || !hasDeadline(ev)) continue;
+      const end = new Date(ev.end);
+      if (end.getTime() - lead * 60000 > now.getTime() + (TICK / 2) * 60000) continue;
+      const id = `due_${ev.id}_${end.getTime()}`;
+      if (await logged(id)) continue;
+      const k = dayKey(end);
+      const quando = k === today ? "oggi" : k === tomorrow ? "domani" : longDay(end).toLowerCase();
+      const bu = ev.buId && buName[ev.buId] ? ` · ${buName[ev.buId]}` : "";
+      await send(tokens, { title: `📌 ${ev.title || "Attività"}`, body: `Scade ${quando} alle ${hm(end)}${bu}`, tag: `due-${ev.id}` });
+      await mark(id, uid, now);
+    }
+  }
+
   /* 3. riepilogo del mattino */
   if (s.digest) {
     const today = dayKey(now);
@@ -110,6 +131,7 @@ async function runUser(uid, tokens, now, windowEvents) {
       const top3 = events.filter((e) => e.priorityLevel === "top3" && !isDone(e) && overlapsDay(e, today))
         .sort((a, b) => (a.priority ?? 9999) - (b.priority ?? 9999) || byStart(a, b));
       const late = events.filter((e) => inBoard(e) && !isDone(e) && dayKey(new Date(e.end)) < today);
+      const dueToday = events.filter((e) => hasDeadline(e) && !isDone(e) && dayKey(new Date(e.end)) === today).sort((a, b) => new Date(a.end) - new Date(b.end));
       const rem = reminders.filter((r) => !r.done && r.due && r.due <= today);
 
       const lines = [];
@@ -117,6 +139,7 @@ async function runUser(uid, tokens, now, windowEvents) {
         ? `📅 ${todayCal.length} impegn${todayCal.length === 1 ? "o" : "i"}${first ? ` · il primo alle ${hm(new Date(first.start))} (${first.title})` : ""}`
         : "📅 Nessun impegno in calendario");
       if (top3.length) lines.push(`🎯 Top 3: ${list(top3.map((e) => e.title))}`);
+      if (dueToday.length) lines.push(`📌 Scadono oggi: ${list(dueToday.map((e) => e.title))}`);
       if (late.length) lines.push(`⚠️ ${late.length} in ritardo`);
       if (rem.length) lines.push(`🔔 Promemoria: ${list(rem.map((r) => r.text))}`);
 
@@ -148,6 +171,12 @@ async function main() {
   console.log(`Impegni nella finestra ${hm(new Date(from))}–${hm(new Date(to))}: ${windowEvents.length}`);
   windowEvents.forEach((e) => console.log(`  · ${hm(new Date(e.start))} cal=${e.inCalendar !== false} notifica=${e.notify !== false} fatto=${isDone(e)} mio=${uids.includes(e.uid)}`));
 
+  // attività che scadono da 2 minuti fa fino a (anticipo massimo + mezzo giro) da adesso
+  const dueTo = new Date(now.getTime() + (MAX_DUE + TICK) * 60000).toISOString();
+  const dueSnap = await db.collection("events").where("end", ">=", from).where("end", "<=", dueTo).get();
+  const dueEvents = dueSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  console.log(`Scadenze nelle prossime 24 ore: ${dueEvents.filter(hasDeadline).length}`);
+
   // prova lanciata a mano da Actions ("Run workflow" con la casella spuntata): impegno finto, non salvato nel calendario
   if (process.env.PROVA_EVENTO === "true") {
     for (const uid of uids) {
@@ -160,7 +189,7 @@ async function main() {
   }
 
   for (const uid of uids) {
-    try { await runUser(uid, byUid[uid], now, windowEvents); }
+    try { await runUser(uid, byUid[uid], now, windowEvents, dueEvents); }
     catch (e) {
       console.error(`Errore per ${uid}:`, e);
       await db.collection("pushSettings").doc(uid).set({ lastRun: now.getTime(), lastError: String(e.message || e).slice(0, 300) }, { merge: true }).catch(() => {});
