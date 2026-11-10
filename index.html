@@ -845,7 +845,7 @@ function Scheduler({user}){
   const seedBus=async()=>{const b=db.batch();DEFAULT_BUS.forEach((x)=>b.set(db.collection("bus").doc(),{...x,uid:user.uid}));await b.commit();};
   const upsertActivity=async(a)=>{const p={name:a.name,color:a.color,dur:a.dur,buId:a.buId||null,uid:user.uid};a.id?await db.collection("activities").doc(a.id).set(p):await db.collection("activities").add(p);};
   const removeActivity=(id)=>db.collection("activities").doc(id).delete();
-  const upsertBu=async(x)=>{const p={name:x.name,color:x.color,uid:user.uid};x.id?await db.collection("bus").doc(x.id).set(p):await db.collection("bus").add(p);};
+  const upsertBu=async(x)=>{const p={name:x.name,color:x.color,inPlanner:x.inPlanner===true,uid:user.uid};x.id?await db.collection("bus").doc(x.id).set(p):await db.collection("bus").add(p);};
   const removeBu=(id)=>db.collection("bus").doc(id).delete();
   const saveEvent=async(ev)=>{const p={activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,note:ev.note,done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,priorityLevel:ev.priorityLevel??null,start:ev.start,end:ev.end,uid:user.uid};ev.id?await db.collection("events").doc(ev.id).set(p,{merge:true}):await db.collection("events").add(p);};
   const deleteEvent=async(id)=>{await db.collection("events").doc(id).delete();setEditing(null);};
@@ -910,7 +910,7 @@ function Scheduler({user}){
     if(view==="day"){const d=cursor;return `${WEEKDAYS[(d.getDay()+6)%7]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;}
     if(view==="week"){const s=days[0],e=days[6];return s.getMonth()===e.getMonth()?`${s.getDate()}–${e.getDate()} ${MONTHS[s.getMonth()]} ${s.getFullYear()}`:`${s.getDate()} ${MONTHS[s.getMonth()].slice(0,3)} – ${e.getDate()} ${MONTHS[e.getMonth()].slice(0,3)} ${e.getFullYear()}`;}
     if(view==="month") return `${MONTHS[cursor.getMonth()]} ${cursor.getFullYear()}`;
-    if(view==="lavoro") return "Lavoro · calendario e Gantt";
+    if(view==="lavoro") return "Planner · calendario e Gantt";
     if(view==="priority") return "Priorità · pianificazione settimanale";
     if(view==="reminders"){const n=reminders.filter((r)=>!r.done).length;return `Promemoria · ${n} da fare`;}
     if(view==="archive"){const n=shown.filter((e)=>e.done).length;return `Archivio · ${n} ${n===1?"completata":"completate"}`;}
@@ -929,7 +929,7 @@ function Scheduler({user}){
     setEditing({id:null,activityId:null,buId:buId||null,title:"",color:(buId&&buMap[buId]?buMap[buId].color:PALETTE[4]),startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:opts.plannerOnly?false:true,inGantt:opts.plannerOnly?false:true,inPlanner:true,priority:null,priorityLevel:null,prio:null,status:"todo",subtasks:[],notify:true,repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
   };
 
-  const VIEWS=[["day","Giorno","calendar"],["week","Settimana","calendar"],["month","Mese","grid"],["gantt","Gantt","gantt"],["lavoro","Lavoro","briefcase"],["priority","Priorità","flag"],["reminders","Promemoria","bell"],["archive","Archivio","archive"]];
+  const VIEWS=[["day","Giorno","calendar"],["week","Settimana","calendar"],["month","Mese","grid"],["gantt","Gantt","gantt"],["lavoro","Planner","list"],["priority","Priorità","flag"],["reminders","Promemoria","bell"],["archive","Archivio","archive"]];
   const VMAP={};VIEWS.forEach(([v,lbl,ic])=>VMAP[v]={lbl,ic});
   const MOBILE_MAIN=["day","week","month","lavoro","priority"];
   const MOBILE_MORE=["gantt","reminders","archive"];
@@ -1135,9 +1135,15 @@ function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewW
   const [cursor,setCursor]=useState(()=>startOfDay(new Date()));
   const [gStart,setGStart]=useState(()=>startOfWeek(new Date()));
 
-  const workBu=workBuId?buMap[workBuId]:null;
+  // BU da mostrare nel Planner (scelte in Gestione → Business Unit); se nessuna è segnata, tutte
+  const plannerBus=useMemo(()=>{const f=bus.filter((b)=>b.inPlanner===true);return f.length?f:bus;},[bus]);
+  const [sel,setSelRaw]=useState(()=>lsGet("gp_planner_sel")||"all");
+  const setSel=(v)=>{setSelRaw(v);lsSet("gp_planner_sel",v);};
+  const effSel=plannerBus.find((b)=>b.id===sel)?sel:(plannerBus.length===1?plannerBus[0].id:"all");
+  const workBu=effSel!=="all"?buMap[effSel]:null;
   const workColor=workBu?workBu.color:"#5B7DA8";
-  const workEvents=useMemo(()=>events.filter((e)=>(e.buId||null)===(workBuId||null)),[events,workBuId]);
+  const workEvents=useMemo(()=>{const ids=new Set(plannerBus.map((b)=>b.id));return events.filter((e)=>effSel==="all"?ids.has(e.buId):e.buId===effSel);},[events,plannerBus,effSel]);
+  const newBuId=effSel!=="all"?effSel:((plannerBus.find((b)=>b.id===workBuId)||plannerBus[0]||{}).id||null);
 
   const today=startOfDay(new Date());
   const total=workEvents.length, done=workEvents.filter((e)=>e.done).length;
@@ -1158,22 +1164,23 @@ function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewW
   },[sub,cursor,weekDays,gStart]);
 
   const newHour=Math.min(23,Math.max(new Date().getHours(),8));
-  const addWork=()=>onNewWithBu(toDateKey(sub==="month"||sub==="week"?cursor:new Date()),9,0,workBuId,60,sub==="planner"?{plannerOnly:true}:{});
+  const addWork=()=>onNewWithBu(toDateKey(sub==="month"||sub==="week"?cursor:new Date()),9,0,newBuId,60,sub==="planner"?{plannerOnly:true}:{});
 
   const SUBS=[["planner","Planner","list"],["month","Mese","grid"],["week","Settimana","calendar"],["gantt","Gantt","gantt"]];
 
   return (
     <div className={`gp-work ${sub!=="planner"&&bus.length>0?"gp-fillcol":""}`}>
       <div className="gp-worktop">
-        <div className="gp-worktitle"><span className="gp-workbadge" style={{background:workColor}}><Icon name="briefcase" size={16} style={{color:"#fff"}}/></span>Lavoro</div>
+        <div className="gp-worktitle"><span className="gp-workbadge" style={{background:workColor}}><Icon name="list" size={16} style={{color:"#fff"}}/></span>Planner{workBu?` · ${workBu.name}`:""}</div>
         <div className="gp-worktools">
-          <select className="gp-select" value={workBuId||""} onChange={(e)=>setWorkBuId(e.target.value||null)} title="Quale Business Unit conta come Lavoro">
-            {bus.map((b)=><option key={b.id} value={b.id}>{b.name}</option>)}
-            <option value="">Senza BU</option>
-          </select>
           <button className="gp-btn solid sm" onClick={addWork}><Icon name="plus" size={15}/> <span className="hide-sm">Nuovo</span></button>
         </div>
       </div>
+
+      {plannerBus.length>1&&<div className="gp-chips" style={{marginBottom:12}}>
+        <button className={`gp-chip ${effSel==="all"?"on":""}`} onClick={()=>setSel("all")}><Icon name="layers" size={12}/> Tutti</button>
+        {plannerBus.map((b)=>(<button key={b.id} className={`gp-chip ${effSel===b.id?"on":""}`} style={effSel===b.id?{borderColor:b.color,background:hexToRgba(b.color,0.12)}:{}} onClick={()=>setSel(b.id)}><span className="dot" style={{background:b.color}}/> {b.name}</button>))}
+      </div>}
 
       <div className="gp-workbar">
         <div className="gp-seg">{SUBS.map(([v,lbl,ic])=>(<button key={v} className={sub===v?"on":""} onClick={()=>setSub(v)}><Icon name={ic} size={14}/> <span className="hide-sm">{lbl}</span></button>))}</div>
@@ -1192,14 +1199,14 @@ function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewW
       </div>
 
       {bus.length===0 ? (
-        <div className="gp-panel"><div className="gp-empty">Non hai ancora Business Unit. Creane una chiamata “Lavoro” per popolare questa sezione.<br/><button className="gp-btn ghost sm" style={{marginTop:12}} onClick={onManageBu}><Icon name="settings" size={14}/> Gestisci Business Unit</button></div></div>
+        <div className="gp-panel"><div className="gp-empty">Non hai ancora Business Unit. Creane una (es. “Lavoro”, “Pro Loco”) per popolare il Planner.<br/><button className="gp-btn ghost sm" style={{marginTop:12}} onClick={onManageBu}><Icon name="settings" size={14}/> Gestisci Business Unit</button></div></div>
       ) : (<>
         {sub==="planner" &&
-          <PlannerView events={workEvents.filter(showInPlanner)} color={workColor} onEvent={onEvent} onPatch={onPatch} onNew={()=>onNewWithBu(toDateKey(new Date()),9,0,workBuId,60,{plannerOnly:true})}/>}
+          <PlannerView events={workEvents.filter(showInPlanner)} color={workColor} onEvent={onEvent} onPatch={onPatch} onNew={()=>onNewWithBu(toDateKey(new Date()),9,0,newBuId,60,{plannerOnly:true})}/>}
         {sub==="month" &&
-          <div className="gp-panel gp-month gp-fill"><MonthView cursor={cursor} events={workEvents.filter((e)=>e.inCalendar!==false)} buMap={buMap} onDay={(k)=>onNewWithBu(k,9,0,workBuId,60)} onEvent={onEvent}/></div>}
+          <div className="gp-panel gp-month gp-fill"><MonthView cursor={cursor} events={workEvents.filter((e)=>e.inCalendar!==false)} buMap={buMap} onDay={(k)=>onNewWithBu(k,9,0,newBuId,60)} onEvent={onEvent}/></div>}
         {sub==="week" &&
-          <div className="gp-panel gp-fill"><DayWeek days={weekDays} view="week" events={workEvents.filter((e)=>e.inCalendar!==false)} buMap={buMap} onSlot={(k,h,m)=>onNewWithBu(k,h,m,workBuId,60)} onEvent={onEvent}/></div>}
+          <div className="gp-panel gp-fill"><DayWeek days={weekDays} view="week" events={workEvents.filter((e)=>e.inCalendar!==false)} buMap={buMap} onSlot={(k,h,m)=>onNewWithBu(k,h,m,newBuId,60)} onEvent={onEvent}/></div>}
         {sub==="gantt" &&
           <div className="gp-panel gp-gantt gp-fill"><div className="gp-gantt-inner">
             <div className="gp-grow gp-ghead">
@@ -1220,7 +1227,7 @@ function WorkGanttRows({start,events,color,onEvent,onToggle}){
   const nowLeft=daysBetween(start,new Date())*GANTT_COL + (new Date()-startOfDay(new Date()))/86400000*GANTT_COL;
   const showNow=nowLeft>=0&&nowLeft<=GANTT_DAYS*GANTT_COL;
   const days=Array.from({length:GANTT_DAYS},(_,i)=>addDays(start,i));
-  if(items.length===0) return <div className="gp-empty">Nessun impegno di lavoro in questo periodo. Aggiungine uno col pulsante “Nuovo”.</div>;
+  if(items.length===0) return <div className="gp-empty">Nessun impegno in questo periodo. Aggiungine uno col pulsante “Nuovo”.</div>;
   return (<>{items.map((ev)=>{
     const s=startOfDay(new Date(ev.start)), e=startOfDay(new Date(ev.end));
     const off=Math.max(0,daysBetween(start,s));
@@ -1364,7 +1371,7 @@ function PlannerView({events,color,onEvent,onPatch,onNew}){
         {lateN>0&&<><span className="sep">·</span><span className="late"><b>{lateN}</b> in ritardo</span></>}
       </div>
       {events.length===0 ? (
-        <div className="gp-panel"><div className="gp-empty">Nessun task di lavoro.<br/><button className="gp-btn solid sm" style={{marginTop:12}} onClick={onNew}><Icon name="plus" size={14}/> Nuovo task</button></div></div>
+        <div className="gp-panel"><div className="gp-empty">Nessun task qui.<br/><button className="gp-btn solid sm" style={{marginTop:12}} onClick={onNew}><Icon name="plus" size={14}/> Nuovo task</button></div></div>
       ) : (<>
         <div className="gp-plhint">
           <Icon name="move" size={16} style={{flexShrink:0,color:"#C75D3A"}}/>
@@ -1858,10 +1865,10 @@ function ManageDrawer({user,tab,setTab,activities,bus,buMap,onClose,onUpsertAct,
         </>)}
 
         {tab==="bu" && (<>
-          <p className="gp-hint">Le Business Unit raggruppano le tue attività (es. TDP, Personal, Lavoro). Crea, rinomina ed elimina liberamente.</p>
+          <p className="gp-hint">Le Business Unit raggruppano le tue attività (es. TDP, Personal, Lavoro). Crea, rinomina ed elimina liberamente. Con <b>Mostra nel Planner</b> scegli quali BU compaiono come scorciatoie nella sezione Planner.</p>
           <div className="gp-actlist">
             {bus.map((b)=>(<div key={b.id} className="gp-actrow">
-              <div className="gp-actmain" style={{cursor:"default"}}><span className="dot" style={{background:b.color}}/><span className="nm">{b.name}</span></div>
+              <div className="gp-actmain" style={{cursor:"default"}}><span className="dot" style={{background:b.color}}/><span className="nm">{b.name}</span>{b.inPlanner===true&&<span className="bu" style={{background:b.color}}>Planner</span>}</div>
               <button className="gp-icon sm" onClick={()=>setDraft({kind:"bu",...b})}><Icon name="pencil" size={15}/></button>
               <button className="gp-icon sm danger" onClick={()=>onRemoveBu(b.id)}><Icon name="trash" size={15}/></button>
             </div>))}
@@ -1872,6 +1879,7 @@ function ManageDrawer({user,tab,setTab,activities,bus,buMap,onClose,onUpsertAct,
               <input className="gp-input" placeholder="Nome BU (es. TDP)" autoFocus value={draft.name} onChange={(e)=>setDraft({...draft,name:e.target.value})}/>
               <label className="gp-lbl">Colore</label>
               <Swatches value={draft.color} onPick={(c)=>setDraft({...draft,color:c})}/>
+              <div className={`gp-toggle ${draft.inPlanner===true?"on":""}`} style={{marginTop:12}} onClick={()=>setDraft({...draft,inPlanner:draft.inPlanner!==true})}><div className="sw"/><span className="txt">Mostra nel Planner</span></div>
               <div className="gp-editactions"><button className="gp-btn ghost sm" onClick={()=>setDraft(null)}>Annulla</button><button className="gp-btn solid sm" disabled={!draft.name.trim()} onClick={()=>{onUpsertBu(draft);setDraft(null);}}><Icon name="check" size={15}/> Salva</button></div>
             </div>
           ):<button className="gp-add" onClick={newBu}><Icon name="plus" size={16}/> Nuova Business Unit</button>}
