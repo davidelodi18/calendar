@@ -626,6 +626,53 @@ const { useState, useEffect, useRef, useMemo } = React;
 
 /* ================= APP INSTALLABILE + NOTIFICHE PUSH ================= */
 const VAPID_KEY="BBsTB5it-7qRX54uHdjDE__7hoaggX3H4QfPrw0Ene3f4X4p0Lv5ASPrS_1NYb8O9DATS0glIY4nQpEVE7Iy8YM"; // chiave pubblica web push (Firebase → Cloud Messaging)
+/* ---- versione e aggiornamento ---- */
+const APP_VERSION="2.0.0";
+async function fetchRemoteVersion(){
+  try{const t=await (await fetch("./index.html?nocache="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const APP_VERSION="([^"]+)"/);return m?m[1]:null;}catch(e){return null;}
+}
+function reloadToVersion(v){location.replace(location.pathname+"?v="+encodeURIComponent(v||APP_VERSION)+"&t="+Date.now());}
+function UpdateWatcher(){
+  const [newVer,setNewVer]=useState(null);
+  const [later,setLater]=useState(null);
+  useEffect(()=>{
+    let alive=true;
+    const check=async()=>{const v=await fetchRemoteVersion();if(alive&&v&&v!==APP_VERSION)setNewVer(v);};
+    check();
+    const iv=setInterval(check,15*60000);
+    const onVis=()=>{if(document.visibilityState==="visible")check();};
+    document.addEventListener("visibilitychange",onVis);
+    return ()=>{alive=false;clearInterval(iv);document.removeEventListener("visibilitychange",onVis);};
+  },[]);
+  if(!newVer||later===newVer)return null;
+  return (
+    <div className="gp-overlay center" style={{zIndex:9999}}>
+      <div className="gp-modal" style={{maxWidth:380,textAlign:"center"}} onClick={(e)=>e.stopPropagation()}>
+        <div className="gp-modal-body" style={{padding:"26px 22px"}}>
+          <div style={{width:56,height:56,borderRadius:16,background:"#C75D3A",display:"grid",placeItems:"center",margin:"0 auto 14px",boxShadow:"0 6px 18px rgba(199,93,58,.35)"}}><Icon name="refresh" size={26} style={{color:"#fff"}}/></div>
+          <h2 style={{fontFamily:"'Fraunces',serif",fontSize:21,fontWeight:600,marginBottom:6}}>Nuova versione disponibile</h2>
+          <p style={{color:"#7A6A5C",fontSize:14,marginBottom:18}}>Giornata {APP_VERSION} → <b style={{color:"#C75D3A"}}>{newVer}</b></p>
+          <button className="gp-btn solid" style={{width:"100%",justifyContent:"center",marginBottom:8}} onClick={()=>reloadToVersion(newVer)}><Icon name="refresh" size={16}/> Aggiorna ora</button>
+          <button className="gp-btn ghost sm" style={{width:"100%",justifyContent:"center"}} onClick={()=>setLater(newVer)}>Più tardi</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+function UpdateBox(){
+  const [st,setSt]=useState("");
+  const run=async()=>{setSt("Controllo…");const v=await fetchRemoteVersion();
+    if(v&&v!==APP_VERSION){setSt(`Aggiorno alla ${v}…`);reloadToVersion(v);}
+    else if(v){setSt("Sei già all'ultima versione. Ricarico per sicurezza…");setTimeout(()=>reloadToVersion(v),900);}
+    else setSt("Non riesco a controllare ora: verifica la connessione.");};
+  return (
+    <div className="gp-nt-card" style={{marginTop:18}}>
+      <div className="gp-nt-h"><Icon name="refresh" size={15}/> App · versione {APP_VERSION}</div>
+      <button className="gp-btn solid sm" onClick={run}><Icon name="refresh" size={14}/> Aggiorna app</button>
+      {st&&<p className="gp-nt-p" style={{marginTop:8}}>{st}</p>}
+    </div>
+  );
+}
 const PUSH_DEFAULTS={startAlerts:true,leadMin:15,dueAlerts:true,dueLead:1440,digest:true,digestTime:"07:30",vapidKey:VAPID_KEY};
 const LS_TOKEN="gp-push-token";
 const lsGet=(k)=>{try{return localStorage.getItem(k);}catch(e){return null;}};
@@ -716,6 +763,7 @@ const plannerOnly=(e)=>showInPlanner(e)&&e.inGantt===false&&e.inCalendar===false
 function Icon({name,size=18,style}){
   const c={width:size,height:size,viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round",style};
   switch(name){
+    case "refresh":return <svg {...c}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>;
     case "plus":return <svg {...c}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
     case "x":return <svg {...c}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
     case "check":return <svg {...c}><polyline points="20 6 9 17 4 12"/></svg>;
@@ -963,6 +1011,7 @@ function Scheduler({user}){
         </div>
       </header>
 
+      <UpdateWatcher/>
       <main className="gp-wrap" ref={wrapRef}>
         {(view==="day"||view==="week") &&
           <div className="gp-panel gp-fill"><DayWeek days={days} view={view} events={shown.filter((e)=>e.inCalendar!==false)} buMap={buMap} onSlot={newEventAt} onEvent={openEvent}/></div>}
@@ -1884,6 +1933,7 @@ function ManageDrawer({user,tab,setTab,activities,bus,buMap,onClose,onUpsertAct,
             </div>
           ):<button className="gp-add" onClick={newBu}><Icon name="plus" size={16}/> Nuova Business Unit</button>}
         </>)}
+        <UpdateBox/>
       </aside>
     </div>
   );
