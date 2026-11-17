@@ -604,6 +604,35 @@
     .gp-datetime .gp-input{font-size:15px}
     .gp-drawer{width:100%;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px))}
   }
+  /* sessioni di lavoro (blocchi del Planner nel calendario) */
+  .gp-calrow,.gp-calrow.gp-fill{display:flex;flex-direction:row;gap:14px;align-items:stretch}
+  .gp-icon.show-sm{display:none}
+  .gp-calrow > .gp-panel{flex:1 1 0;min-width:0;display:flex;flex-direction:column}
+  .gp-tray{width:272px;flex:0 0 272px;background:#FFFDF8;border:1px solid #E4D7C2;border-radius:16px;padding:12px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .gp-tray-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+  .gp-tray-h .nm{font-weight:800;font-size:14px;display:flex;align-items:center;gap:7px}
+  .gp-tray-hint{font-size:11.5px;color:#8A7A6B;margin-bottom:8px;line-height:1.35}
+  .gp-tray .gp-chips{margin-bottom:8px}
+  .gp-tray-list{flex:1;overflow:auto;display:flex;flex-direction:column;gap:7px;padding-right:2px}
+  .gp-tray-item{border:1px solid #EADFCD;background:#FBF6EC;border-radius:11px;padding:8px 9px 8px 11px;cursor:grab;text-align:left;font-family:inherit;display:flex;flex-direction:column;gap:3px;border-left-width:4px}
+  .gp-tray-item:hover{background:#F6EEDF}
+  .gp-tray-item:active{cursor:grabbing}
+  .gp-tray-item .t{font-weight:700;font-size:13px;color:#3A2E26;line-height:1.25}
+  .gp-tray-item .m{font-size:11px;color:#8A7A6B;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .gp-tray-item .m .pl{color:#3E7A5B;font-weight:700}
+  .gp-tray-empty{font-size:12.5px;color:#8A7A6B;text-align:center;padding:18px 6px}
+  .gp-event.block{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.55) 0 6px,transparent 6px 12px)}
+  .gp-event.block .ev-title{display:flex;align-items:center;gap:4px}
+  .gp-daycol.dropover{background:rgba(199,93,58,.06)}
+  .gp-plplan{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;color:#3E7A5B;background:#E4F0E8;border:none;border-radius:7px;padding:3px 7px;cursor:pointer;font-family:inherit}
+  .gp-plplan.none{color:#7A6A5C;background:#F1E9DC}
+  .gp-blocklist{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+  .gp-blockrow{display:flex;align-items:center;gap:8px;border:1px solid #EADFCD;background:#FBF6EC;border-radius:10px;padding:7px 10px;cursor:pointer;font-family:inherit;text-align:left;font-size:13px;color:#3A2E26}
+  .gp-blockrow.done{opacity:.6;text-decoration:line-through}
+  .gp-blockrow .d{flex:1}
+  .gp-durchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .gp-icon.on{background:#3A2E26;color:#fff;border-color:#3A2E26}
+  @media (max-width:680px){ .gp-calrow > .gp-tray{display:none} .gp-icon.show-sm{display:grid} }
 </style>
 </head>
 <body>
@@ -627,7 +656,7 @@ const { useState, useEffect, useRef, useMemo } = React;
 /* ================= APP INSTALLABILE + NOTIFICHE PUSH ================= */
 const VAPID_KEY="BBsTB5it-7qRX54uHdjDE__7hoaggX3H4QfPrw0Ene3f4X4p0Lv5ASPrS_1NYb8O9DATS0glIY4nQpEVE7Iy8YM"; // chiave pubblica web push (Firebase → Cloud Messaging)
 /* ---- versione e aggiornamento ---- */
-const APP_VERSION="2.0.0";
+const APP_VERSION="2.1.0";
 async function fetchRemoteVersion(){
   try{const t=await (await fetch("./index.html?nocache="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const APP_VERSION="([^"]+)"/);return m?m[1]:null;}catch(e){return null;}
 }
@@ -757,6 +786,9 @@ const DEFAULT_BUS=[{name:"TDP",color:"#C75D3A"},{name:"Personal",color:"#7E9B6E"
 function detectWorkBu(bus){const w=bus.find((b)=>/lavoro|work|ufficio|italcer/i.test(b.name));return (w||bus[0]||null)?.id ?? null;}
 /* inPlanner è un campo nuovo: per gli eventi vecchi eredita il flag Gantt */
 const showInPlanner=(e)=>(e.inPlanner===undefined||e.inPlanner===null)?(e.inGantt!==false):(e.inPlanner!==false);
+const isBlock=(e)=>!!e&&e.kind==="block";
+const fmtDur=(min)=>{min=Math.round(min);const h=Math.floor(min/60),m=min%60;return h?(m?`${h}h ${m}m`:`${h}h`):`${m}m`;};
+const blockMinutes=(list)=>(list||[]).reduce((a,b)=>a+Math.max(0,(new Date(b.end)-new Date(b.start))/60000),0);
 const plannerOnly=(e)=>showInPlanner(e)&&e.inGantt===false&&e.inCalendar===false;
 
 /* ---- icone ---- */
@@ -856,6 +888,10 @@ function Scheduler({user}){
   const [editing,setEditing]=useState(null);
   const [workBuId,setWorkBuId]=useState(null);
   const [moreOpen,setMoreOpen]=useState(false);
+  const [blockEdit,setBlockEdit]=useState(null); // sessione di lavoro aperta
+  const [tray,setTrayRaw]=useState(()=>lsGet("gp_tray")!=="0");
+  const setTray=(v)=>{setTrayRaw(v);lsSet("gp_tray",v?"1":"0");};
+  const [traySheet,setTraySheet]=useState(false);
   const wrapRef=useRef(null);
   // ogni cambio di sezione riparte dall'alto (niente scroll "ereditato" dalla sezione precedente)
   useEffect(()=>{if(wrapRef.current)wrapRef.current.scrollTop=0;},[view]);
@@ -896,7 +932,11 @@ function Scheduler({user}){
   const upsertBu=async(x)=>{const p={name:x.name,color:x.color,inPlanner:x.inPlanner===true,uid:user.uid};x.id?await db.collection("bus").doc(x.id).set(p):await db.collection("bus").add(p);};
   const removeBu=(id)=>db.collection("bus").doc(id).delete();
   const saveEvent=async(ev)=>{const p={activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,note:ev.note,done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,priorityLevel:ev.priorityLevel??null,start:ev.start,end:ev.end,uid:user.uid};ev.id?await db.collection("events").doc(ev.id).set(p,{merge:true}):await db.collection("events").add(p);};
-  const deleteEvent=async(id)=>{await db.collection("events").doc(id).delete();setEditing(null);};
+  const deleteEvent=async(id)=>{
+    const b=db.batch();b.delete(db.collection("events").doc(id));
+    events.filter((x)=>isBlock(x)&&x.taskId===id).slice(0,400).forEach((x)=>b.delete(db.collection("events").doc(x.id)));
+    await b.commit();setEditing(null);
+  };
   const reorderPriorities=(ids)=>{const b=db.batch();ids.forEach((id,i)=>b.update(db.collection("events").doc(id),{priority:i}));return b.commit();};
   const setPriorityLevel=(id,level)=>db.collection("events").doc(id).update({priorityLevel:level||null});
   const moveEventToDay=(ev,dayKey,level)=>{
@@ -923,6 +963,9 @@ function Scheduler({user}){
     } else {
       const {start,end}=mk(d.startDate);
       d.id?await db.collection("events").doc(d.id).set({...base,start,end},{merge:true}):await db.collection("events").add({...base,start,end});
+      // le sessioni di lavoro del task prendono titolo, colore e BU aggiornati
+      if(d.id){const bl=events.filter((x)=>isBlock(x)&&x.taskId===d.id&&(x.title!==base.title||x.color!==base.color||(x.buId||null)!==base.buId));
+        if(bl.length){const b=db.batch();bl.slice(0,400).forEach((x)=>b.update(db.collection("events").doc(x.id),{title:base.title,color:base.color,buId:base.buId}));await b.commit();}}
       // l'avviso acceso/spento su un impegno ricorrente vale per tutta la serie
       if(d.id&&d.seriesId&&(d.notify!==false)!==(d._origNotify!==false)){
         const qs=await db.collection("events").where("uid","==",user.uid).where("seriesId","==",d.seriesId).get();
@@ -938,8 +981,38 @@ function Scheduler({user}){
   const deleteReminder=(id)=>db.collection("reminders").doc(id).delete();
 
   const buMap=useMemo(()=>{const m={};bus.forEach((b)=>m[b.id]=b);return m;},[bus]);
+  /* task e sessioni di lavoro: le sessioni sono impegni "kind:block" collegati a un task del Planner */
+  const tasks=useMemo(()=>events.filter((e)=>!isBlock(e)),[events]);
+  const taskMap=useMemo(()=>{const m={};tasks.forEach((t)=>m[t.id]=t);return m;},[tasks]);
+  const blocks=useMemo(()=>events.filter(isBlock).filter((b)=>taskMap[b.taskId]).map((b)=>{const t=taskMap[b.taskId];return {...b,title:t.title,color:t.color,buId:t.buId||null,_task:t};}),[events,taskMap]);
+  const blocksByTask=useMemo(()=>{const m={};blocks.forEach((b)=>(m[b.taskId]=m[b.taskId]||[]).push(b));Object.values(m).forEach((l)=>l.sort((a,b)=>new Date(a.start)-new Date(b.start)));return m;},[blocks]);
+  const planTask=(task,dateKey,h,m=0)=>{
+    let k=dateKey,hh=h;
+    if(!k){k=toDateKey(view==="day"?cursor:new Date());}
+    if(hh===undefined){const now=new Date();hh=k===toDateKey(now)?Math.min(22,now.getHours()+1):9;}
+    const st=`${pad(hh)}:${pad(m)}`;const en=new Date(combine(k,st).getTime()+60*60000);
+    setBlockEdit({id:null,taskId:task.id,date:k,start:st,end:timeStr(en),done:false});
+  };
+  const openBlock=(b)=>{const s=new Date(b.start),e=new Date(b.end);setBlockEdit({id:b.id,taskId:b.taskId,date:toDateKey(s),start:timeStr(s),end:timeStr(e),done:!!b.done});};
+  const saveBlock=async(bd)=>{
+    const t=taskMap[bd.taskId];if(!t)return setBlockEdit(null);
+    const start=combine(bd.date,bd.start);let end=combine(bd.date,bd.end);if(end<=start)end=new Date(start.getTime()+30*60000);
+    const p={kind:"block",taskId:t.id,title:t.title,color:t.color,buId:t.buId||null,note:"",done:!!bd.done,inCalendar:true,inGantt:false,inPlanner:false,notify:t.notify!==false,start:start.toISOString(),end:end.toISOString(),uid:user.uid};
+    bd.id?await db.collection("events").doc(bd.id).set(p,{merge:true}):await db.collection("events").add(p);
+    if(bd.taskDone&&!t.done)await db.collection("events").doc(t.id).update({done:true,status:"done"});
+    setBlockEdit(null);
+  };
+  const deleteBlock=async(id)=>{await db.collection("events").doc(id).delete();setBlockEdit(null);};
+  const dropOnCalendar=(item,dateKey,h,m)=>{
+    if(item.type==="task"){const t=taskMap[item.id];if(t)planTask(t,dateKey,h,m);return;}
+    if(item.type==="block"){const b=blocks.find((x)=>x.id===item.id);if(!b)return;
+      const dur=Math.max(15*60000,new Date(b.end)-new Date(b.start));const ns=combine(dateKey,`${pad(h)}:${pad(m)}`);
+      db.collection("events").doc(b.id).update({start:ns.toISOString(),end:new Date(ns.getTime()+dur).toISOString()});}
+  };
   useEffect(()=>{ if(bus.length && !bus.find((b)=>b.id===workBuId)) setWorkBuId(detectWorkBu(bus)); },[bus]);
-  const shown=useMemo(()=>buFilter==="all"?events:events.filter((e)=>(e.buId||null)===(buFilter===NOBU?null:buFilter)),[events,buFilter]);
+  const byBu=(list)=>buFilter==="all"?list:list.filter((e)=>(e.buId||null)===(buFilter===NOBU?null:buFilter));
+  const shown=useMemo(()=>byBu(tasks),[tasks,buFilter]);
+  const calShown=useMemo(()=>[...shown.filter((e)=>e.inCalendar!==false),...byBu(blocks)],[shown,blocks,buFilter]);
 
   const days=useMemo(()=>{
     if(view==="day") return [new Date(cursor)];
@@ -971,7 +1044,7 @@ function Scheduler({user}){
     const bu0=activity?.buId??defaultBu();
     setEditing({id:null,activityId:activity?.id??null,buId:bu0,title:activity?.name??"",color:activity?.color??(bu0&&buMap[bu0]?buMap[bu0].color:PALETTE[0]),startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:true,inGantt:true,inPlanner:true,priority:null,priorityLevel:null,prio:null,status:"todo",subtasks:[],notify:true,repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
   };
-  const openEvent=(ev)=>{const s=new Date(ev.start),e=new Date(ev.end);setEditing({id:ev.id,activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,startDate:toDateKey(s),startTime:timeStr(s),endDate:toDateKey(e),endTime:timeStr(e),note:ev.note||"",done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,inPlanner:showInPlanner(ev),priority:ev.priority??null,priorityLevel:ev.priorityLevel??null,prio:ev.prio??null,status:ev.status||(ev.done?"done":"todo"),subtasks:ev.subtasks||[],notify:ev.notify!==false,_origNotify:ev.notify!==false,seriesId:ev.seriesId||null,_isNew:false});};
+  const openEvent=(ev)=>{if(isBlock(ev))return openBlock(ev);const s=new Date(ev.start),e=new Date(ev.end);setEditing({id:ev.id,activityId:ev.activityId,buId:ev.buId||null,title:ev.title,color:ev.color,startDate:toDateKey(s),startTime:timeStr(s),endDate:toDateKey(e),endTime:timeStr(e),note:ev.note||"",done:!!ev.done,inCalendar:ev.inCalendar!==false,inGantt:ev.inGantt!==false,inPlanner:showInPlanner(ev),priority:ev.priority??null,priorityLevel:ev.priorityLevel??null,prio:ev.prio??null,status:ev.status||(ev.done?"done":"todo"),subtasks:ev.subtasks||[],notify:ev.notify!==false,_origNotify:ev.notify!==false,seriesId:ev.seriesId||null,_isNew:false});};
   const newEventWithBu=(dateKey,hour,minute=0,buId=null,dur=60,opts={})=>{
     const endMin=minute+dur;let eh=hour+Math.floor(endMin/60),em=endMin%60;if(eh>=24){eh=23;em=59;}
     setEditing({id:null,activityId:null,buId:buId||null,title:"",color:(buId&&buMap[buId]?buMap[buId].color:PALETTE[4]),startDate:dateKey,startTime:`${pad(hour)}:${pad(minute)}`,endDate:dateKey,endTime:`${pad(eh)}:${pad(em)}`,note:"",done:false,inCalendar:opts.plannerOnly?false:true,inGantt:opts.plannerOnly?false:true,inPlanner:true,priority:null,priorityLevel:null,prio:null,status:"todo",subtasks:[],notify:true,repeat:"none",repeatUntil:"",repeatDays:[],_isNew:true});
@@ -992,6 +1065,8 @@ function Scheduler({user}){
         <div className="gp-brand"><div className="gp-logo"><LogoMark/></div><div><div className="gp-title">Giornata</div><div className="gp-sub">{periodLabel}</div></div></div>
         {(hasNav||hasBuSel) && <div className="gp-tools">
           {hasNav && <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>}
+          {(view==="day"||view==="week") && <button className={`gp-icon ${tray?"on":""} hide-sm`} title="Task da pianificare" onClick={()=>setTray(!tray)}><Icon name="list" size={16}/></button>}
+          {(view==="day"||view==="week") && <button className="gp-icon show-sm" title="Task da pianificare" onClick={()=>setTraySheet(true)}><Icon name="list" size={16}/></button>}
           {hasBuSel && (<select className="gp-select" value={buFilter} onChange={(e)=>setBuFilter(e.target.value)}>
             <option value="all">Tutte le BU</option>
             {bus.map((b)=><option key={b.id} value={b.id}>{b.name}</option>)}
@@ -1014,17 +1089,20 @@ function Scheduler({user}){
       <UpdateWatcher/>
       <main className="gp-wrap" ref={wrapRef}>
         {(view==="day"||view==="week") &&
-          <div className="gp-panel gp-fill"><DayWeek days={days} view={view} events={shown.filter((e)=>e.inCalendar!==false)} buMap={buMap} onSlot={newEventAt} onEvent={openEvent}/></div>}
+          <div className="gp-calrow gp-fill">
+            <div className="gp-panel gp-fill"><DayWeek days={days} view={view} events={calShown} buMap={buMap} onSlot={newEventAt} onEvent={openEvent} onDropItem={dropOnCalendar}/></div>
+            {tray&&<TaskTray tasks={tasks} bus={bus} buMap={buMap} blocksByTask={blocksByTask} onPlan={(t)=>planTask(t)} onOpen={openEvent} onClose={()=>setTray(false)}/>}
+          </div>}
         {view==="month" &&
-          <div className="gp-panel gp-month gp-fill"><MonthView cursor={cursor} events={shown.filter((e)=>e.inCalendar!==false)} buMap={buMap} onDay={(k)=>newEventAt(k,9)} onEvent={openEvent}/></div>}
+          <div className="gp-panel gp-month gp-fill"><MonthView cursor={cursor} events={calShown} buMap={buMap} onDay={(k)=>newEventAt(k,9)} onEvent={openEvent}/></div>}
         {view==="gantt" &&
           <GanttView start={ganttStart} events={shown.filter((e)=>e.inGantt!==false)} bus={bus} buFilter={buFilter} onNew={()=>newEventAt(toDateKey(new Date()),9)} onEvent={openEvent} onToggle={toggleDone}/>}
         {view==="lavoro" &&
-          <WorkView events={events} bus={bus} buMap={buMap} workBuId={workBuId} setWorkBuId={setWorkBuId} onEvent={openEvent} onToggle={toggleDone} onNewWithBu={newEventWithBu} onManageBu={()=>setManage("bu")} onPatch={patchEvent}/>}
+          <WorkView events={tasks} blocks={blocks} blocksByTask={blocksByTask} onPlan={(t)=>planTask(t)} bus={bus} buMap={buMap} workBuId={workBuId} setWorkBuId={setWorkBuId} onEvent={openEvent} onToggle={toggleDone} onNewWithBu={newEventWithBu} onManageBu={()=>setManage("bu")} onPatch={patchEvent}/>}
         {view==="archive" &&
           <ArchiveView events={shown.filter((e)=>e.done)} buMap={buMap} onEvent={openEvent} onToggle={toggleDone} onDelete={deleteEvent}/>}
         {view==="priority" &&
-          <PriorityView events={shown} workEvents={events.filter((e)=>(e.buId||null)===(workBuId||null))} workBuId={workBuId} bus={bus} buMap={buMap} onEvent={openEvent} onToggle={toggleDone} onReorder={reorderPriorities} onSetLevel={setPriorityLevel} onMoveDay={moveEventToDay}/>}
+          <PriorityView events={shown} workEvents={tasks.filter((e)=>(e.buId||null)===(workBuId||null))} workBuId={workBuId} bus={bus} buMap={buMap} onEvent={openEvent} onToggle={toggleDone} onReorder={reorderPriorities} onSetLevel={setPriorityLevel} onMoveDay={moveEventToDay}/>}
         {view==="reminders" &&
           <ReminderView reminders={reminders} onAdd={addReminder} onUpdate={updateReminder} onDelete={deleteReminder}/>}
       </main>
@@ -1050,14 +1128,29 @@ function Scheduler({user}){
         onUpsertBu={upsertBu} onRemoveBu={removeBu} onSeedBu={seedBus}
         onUse={(a)=>{setManage(null);newEventAt(toDateKey(view==="day"||view==="month"?cursor:new Date()),new Date().getHours(),0,a);}}/>}
 
-      {editing && <EventModal draft={editing} activities={activities} bus={bus} onChange={setEditing} onClose={()=>setEditing(null)} onDelete={deleteEvent} onSave={submitEvent}/>}
+      {editing && <EventModal draft={editing} activities={activities} bus={bus} onChange={setEditing} onClose={()=>setEditing(null)} onDelete={deleteEvent} onSave={submitEvent}
+        blocks={editing.id?(blocksByTask[editing.id]||[]):[]} onOpenBlock={(b)=>{setEditing(null);openBlock(b);}}
+        onPlan={async(d)=>{const t=taskMap[d.id];await submitEvent(d);if(t)planTask(t);}}/>}
+      {blockEdit && <BlockSheet draft={blockEdit} task={taskMap[blockEdit.taskId]} buMap={buMap} onChange={setBlockEdit} onClose={()=>setBlockEdit(null)} onSave={saveBlock} onDelete={deleteBlock}
+        onOpenTask={(t)=>{setBlockEdit(null);openEvent(t);}}/>}
+      {traySheet && <div className="gp-sheet-ov" onClick={()=>setTraySheet(false)}>
+        <div className="gp-sheet" style={{height:"78vh",display:"flex",flexDirection:"column"}} onClick={(e)=>e.stopPropagation()}>
+          <TaskTray sheet tasks={tasks} bus={bus} buMap={buMap} blocksByTask={blocksByTask} onPlan={(t)=>{setTraySheet(false);planTask(t);}} onOpen={(t)=>{setTraySheet(false);openEvent(t);}} onClose={()=>setTraySheet(false)}/>
+        </div>
+      </div>}
     </div>
   );
 }
 
 /* ---- Giorno / Settimana ---- */
-function DayWeek({days,view,events,buMap,onSlot,onEvent}){
+function DayWeek({days,view,events,buMap,onSlot,onEvent,onDropItem}){
   const ref=useRef(null);
+  const [overDay,setOverDay]=useState(null);
+  const slotAt=(e,el)=>{const r=el.getBoundingClientRect();let m=((e.clientY-r.top)/HOUR_H)*60+DAY_START*60;m=Math.max(0,Math.min(23*60+45,Math.round(m/15)*15));return [Math.floor(m/60),m%60];};
+  const dragTypes=(e)=>Array.from(e.dataTransfer?.types||[]);
+  const onOver=(e,k)=>{if(!onDropItem)return;const ty=dragTypes(e);if(ty.includes("text/gp-task")||ty.includes("text/gp-block")){e.preventDefault();e.dataTransfer.dropEffect="move";if(overDay!==k)setOverDay(k);}};
+  const onDrop=(e,day)=>{if(!onDropItem)return;const t=e.dataTransfer.getData("text/gp-task"),b=e.dataTransfer.getData("text/gp-block");setOverDay(null);
+    if(!t&&!b)return;e.preventDefault();const [h,m]=slotAt(e,e.currentTarget);onDropItem(t?{type:"task",id:t}:{type:"block",id:b},toDateKey(day),h,m);};
   const hours=Array.from({length:DAY_END-DAY_START},(_,i)=>DAY_START+i);
   useEffect(()=>{if(ref.current)ref.current.scrollTop=(7-DAY_START)*HOUR_H-20;},[view]);
   const handleClick=(e,day)=>{const r=e.currentTarget.getBoundingClientRect();let m=((e.clientY-r.top)/HOUR_H)*60+DAY_START*60;m=Math.max(0,Math.round(m/15)*15);const h=Math.floor(m/60);if(h>=24)return;onSlot(toDateKey(day),h,m%60);};
@@ -1072,12 +1165,15 @@ function DayWeek({days,view,events,buMap,onSlot,onEvent}){
       <div className="gp-grid" style={{gridTemplateColumns:tmpl}}>
         <div className="gp-gutter-col">{hours.map((h)=><div key={h} className="gp-hourlabel" style={{height:HOUR_H}}><span>{pad(h)}:00</span></div>)}</div>
         {days.map((day)=>{const evs=dayEvents(day);const now=new Date();const sn=sameDay(day,now);const nt=(minutesInDay(now,day)/60)*HOUR_H;
-          return (<div key={toDateKey(day)} className="gp-daycol" style={{height:(DAY_END-DAY_START)*HOUR_H}} onClick={(e)=>handleClick(e,day)}>
+          return (<div key={toDateKey(day)} className={`gp-daycol ${overDay===toDateKey(day)?"dropover":""}`} style={{height:(DAY_END-DAY_START)*HOUR_H}} onClick={(e)=>handleClick(e,day)}
+            onDragOver={(e)=>onOver(e,toDateKey(day))} onDragLeave={(e)=>{if(!e.currentTarget.contains(e.relatedTarget))setOverDay(null);}} onDrop={(e)=>onDrop(e,day)}>
             {hours.map((h)=><div key={h} className="gp-slot" style={{height:HOUR_H}}/>)}
             {sn&&nt>=0&&nt<=(DAY_END-DAY_START)*HOUR_H&&<div className="gp-nowline" style={{top:nt}}><span/></div>}
             {evs.map((ev)=>{const top=(ev._s/60)*HOUR_H;const height=Math.max(20,((ev._e-ev._s)/60)*HOUR_H-3);const w=100/ev._cols;
-              return (<button key={ev.id} className={`gp-event ${ev.done?"done":""}`} style={{top,height,left:`calc(${ev._lane*w}% + 3px)`,width:`calc(${w}% - 6px)`,background:hexToRgba(ev.color,0.16),borderLeft:`3px solid ${ev.color}`}} onClick={(e)=>{e.stopPropagation();onEvent(ev);}}>
-                <span className="ev-title" style={{color:ev.color}}>{ev.title}</span>
+              const blk=isBlock(ev);
+              return (<button key={ev.id} className={`gp-event ${ev.done?"done":""} ${blk?"block":""}`} style={{top,height,left:`calc(${ev._lane*w}% + 3px)`,width:`calc(${w}% - 6px)`,background:hexToRgba(ev.color,0.16),borderLeft:`3px solid ${ev.color}`}} onClick={(e)=>{e.stopPropagation();onEvent(ev);}}
+                draggable={blk&&!!onDropItem} onDragStart={blk?(e)=>{e.dataTransfer.setData("text/gp-block",ev.id);e.dataTransfer.effectAllowed="move";}:undefined}>
+                <span className="ev-title" style={{color:ev.color}}>{blk&&<Icon name="list" size={11}/>}{ev.title}</span>
                 {height>34&&<span className="ev-time">{timeStr(new Date(ev.start))}–{timeStr(new Date(ev.end))}{ev.buId&&buMap[ev.buId]?" · "+buMap[ev.buId].name:""}</span>}
                 {stripHtml(ev.note)&&height>56&&<span className="ev-note">{stripHtml(ev.note)}</span>}
               </button>);})}
@@ -1179,7 +1275,7 @@ function GanttView({start,events,bus,buFilter,onNew,onEvent,onToggle}){
 }
 
 /* ---- Sezione Lavoro: calendario + Gantt dedicati ---- */
-function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewWithBu,onManageBu,onPatch}){
+function WorkView({events,blocks=[],blocksByTask={},onPlan,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewWithBu,onManageBu,onPatch}){
   const [sub,setSub]=useState("planner");          // planner | month | week | gantt
   const [cursor,setCursor]=useState(()=>startOfDay(new Date()));
   const [gStart,setGStart]=useState(()=>startOfWeek(new Date()));
@@ -1192,6 +1288,7 @@ function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewW
   const workBu=effSel!=="all"?buMap[effSel]:null;
   const workColor=workBu?workBu.color:"#5B7DA8";
   const workEvents=useMemo(()=>{const ids=new Set(plannerBus.map((b)=>b.id));return events.filter((e)=>effSel==="all"?ids.has(e.buId):e.buId===effSel);},[events,plannerBus,effSel]);
+  const workCal=useMemo(()=>{const ids=new Set(plannerBus.map((b)=>b.id));return [...workEvents.filter((e)=>e.inCalendar!==false),...blocks.filter((e)=>effSel==="all"?ids.has(e.buId):e.buId===effSel)];},[workEvents,blocks,plannerBus,effSel]);
   const newBuId=effSel!=="all"?effSel:((plannerBus.find((b)=>b.id===workBuId)||plannerBus[0]||{}).id||null);
 
   const today=startOfDay(new Date());
@@ -1251,11 +1348,11 @@ function WorkView({events,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewW
         <div className="gp-panel"><div className="gp-empty">Non hai ancora Business Unit. Creane una (es. “Lavoro”, “Pro Loco”) per popolare il Planner.<br/><button className="gp-btn ghost sm" style={{marginTop:12}} onClick={onManageBu}><Icon name="settings" size={14}/> Gestisci Business Unit</button></div></div>
       ) : (<>
         {sub==="planner" &&
-          <PlannerView events={workEvents.filter(showInPlanner)} color={workColor} onEvent={onEvent} onPatch={onPatch} onNew={()=>onNewWithBu(toDateKey(new Date()),9,0,newBuId,60,{plannerOnly:true})}/>}
+          <PlannerView events={workEvents.filter(showInPlanner)} color={workColor} onEvent={onEvent} onPatch={onPatch} onPlan={onPlan} blocksByTask={blocksByTask} onNew={()=>onNewWithBu(toDateKey(new Date()),9,0,newBuId,60,{plannerOnly:true})}/>}
         {sub==="month" &&
-          <div className="gp-panel gp-month gp-fill"><MonthView cursor={cursor} events={workEvents.filter((e)=>e.inCalendar!==false)} buMap={buMap} onDay={(k)=>onNewWithBu(k,9,0,newBuId,60)} onEvent={onEvent}/></div>}
+          <div className="gp-panel gp-month gp-fill"><MonthView cursor={cursor} events={workCal} buMap={buMap} onDay={(k)=>onNewWithBu(k,9,0,newBuId,60)} onEvent={onEvent}/></div>}
         {sub==="week" &&
-          <div className="gp-panel gp-fill"><DayWeek days={weekDays} view="week" events={workEvents.filter((e)=>e.inCalendar!==false)} buMap={buMap} onSlot={(k,h,m)=>onNewWithBu(k,h,m,newBuId,60)} onEvent={onEvent}/></div>}
+          <div className="gp-panel gp-fill"><DayWeek days={weekDays} view="week" events={workCal} buMap={buMap} onSlot={(k,h,m)=>onNewWithBu(k,h,m,newBuId,60)} onEvent={onEvent}/></div>}
         {sub==="gantt" &&
           <div className="gp-panel gp-gantt gp-fill"><div className="gp-gantt-inner">
             <div className="gp-grow gp-ghead">
@@ -1325,7 +1422,7 @@ const PL_GROUPS=[
 const prioKey=(ev)=>["alta","media","bassa"].includes(ev.prio)?ev.prio:"none";
 const plOrderOf=(ev)=>Number.isFinite(ev.plOrder)?ev.plOrder:1e9;
 
-function PlannerView({events,color,onEvent,onPatch,onNew}){
+function PlannerView({events,color,onEvent,onPatch,onNew,onPlan,blocksByTask={}}){
   const [showDone,setShowDone]=useState(false);
   const [drag,setDrag]=useState(null);
   const [over,setOver]=useState(null);
@@ -1407,7 +1504,7 @@ function PlannerView({events,color,onEvent,onPatch,onNew}){
 
   const card=(ev,gk,i)=>(
     <div key={ev.id} data-plid={ev.id} data-plgroup={gk} data-plindex={i}>
-      <PlannerCard ev={ev} pk={gk} color={color} onEvent={onEvent} onPatch={onPatch}
+      <PlannerCard ev={ev} pk={gk} color={color} onEvent={onEvent} onPatch={onPatch} onPlan={onPlan} blocks={blocksByTask[ev.id]}
         dragging={!!drag&&drag.id===ev.id} onGrip={(e)=>startDrag(ev,e)}/>
     </div>
   );
@@ -1446,7 +1543,7 @@ function PlannerView({events,color,onEvent,onPatch,onNew}){
         })}
         {done.length>0&&<>
           <button className="gp-pldone-tog" onClick={()=>setShowDone((s)=>!s)}><Icon name={showDone?"down":"right"} size={14}/> Completati ({done.length})</button>
-          {showDone&&<div className="gp-plgrid">{done.map((ev)=><PlannerCard key={ev.id} ev={ev} pk={prioKey(ev)} color={color} onEvent={onEvent} onPatch={onPatch}/>)}</div>}
+          {showDone&&<div className="gp-plgrid">{done.map((ev)=><PlannerCard key={ev.id} ev={ev} pk={prioKey(ev)} color={color} onEvent={onEvent} onPatch={onPatch} blocks={blocksByTask[ev.id]}/>)}</div>}
         </>}
       </>)}
       {drag&&ReactDOM.createPortal(
@@ -1456,7 +1553,7 @@ function PlannerView({events,color,onEvent,onPatch,onNew}){
   );
 }
 
-function PlannerCard({ev,pk,color,onEvent,onPatch,dragging,onGrip}){
+function PlannerCard({ev,pk,color,onEvent,onPatch,dragging,onGrip,onPlan,blocks}){
   const [adding,setAdding]=useState(false);
   const [txt,setTxt]=useState("");
   const [editSubId,setEditSubId]=useState(null);
@@ -1492,6 +1589,7 @@ function PlannerCard({ev,pk,color,onEvent,onPatch,dragging,onGrip}){
       <div className="gp-plmeta">
         <button className={`gp-plprio p-${ev.prio||"none"}`} onClick={setPrio} title="Tocca per cambiare priorità"><Icon name="flag" size={11}/>{ev.prio?{alta:"Alta",media:"Media",bassa:"Bassa"}[ev.prio]:"Priorità"}</button>
         <span className={`gp-pldue d-${di.tone}`}><Icon name="calendar" size={11}/>{di.date} · {di.phrase}</span>
+        {(onPlan||(blocks&&blocks.length>0))&&<button className={`gp-plplan ${blocks&&blocks.length?"":"none"}`} onClick={()=>onPlan&&onPlan(ev)} title="Pianifica una sessione di lavoro nel calendario"><Icon name="calendar" size={11}/>{blocks&&blocks.length?`${fmtDur(blockMinutes(blocks))} pianificate`:"Pianifica"}</button>}
         {plannerOnly(ev)&&<span className="gp-plonly" title="Non compare in calendario né nel Gantt"><Icon name="list" size={10}/> solo planner</span>}
       </div>
       {notePreview&&<div className="gp-plnote">{notePreview}</div>}
@@ -2113,7 +2211,7 @@ function ModalSubtasks({items,onChange}){
   );
 }
 
-function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete}){
+function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete,blocks=[],onOpenBlock,onPlan}){
   const set=(p)=>onChange({...draft,...p});
   // spostando l'inizio, la fine si sposta insieme mantenendo la durata (1 ora per un impegno nuovo)
   const shiftStart=(startDate,startTime)=>{
@@ -2174,6 +2272,13 @@ function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete}){
           <div className={`gp-toggle ${draft.notify!==false?"on":""}`} onClick={()=>set({notify:draft.notify===false})}><div className="sw"/><span className="txt"><Icon name="bell" size={14} style={{marginRight:6,verticalAlign:"-2px"}}/>{draft.inCalendar===false?"Notifica prima della scadenza":multiDay?"Notifica prima dell'inizio e della scadenza":"Notifica prima dell'inizio"}{draft.seriesId?" (per tutta la serie)":""}</span></div>
           {draft.inCalendar===false&&draft.inGantt===false&&draft.inPlanner===false&&
             <div className="gp-warn"><Icon name="flag" size={13}/> Con tutti gli interruttori spenti il task non comparirà da nessuna parte.</div>}
+          {!draft._isNew&&draft.inPlanner!==false&&onPlan&&(<>
+            <label className="gp-lbl"><Icon name="calendar" size={13} style={{marginRight:5}}/>Sessioni di lavoro{blocks.length?` · ${fmtDur(blockMinutes(blocks))}`:""}</label>
+            {blocks.length>0&&<div className="gp-blocklist">{blocks.map((b)=>{const s=new Date(b.start),en=new Date(b.end);return (
+              <button key={b.id} className={`gp-blockrow ${b.done?"done":""}`} onClick={()=>onOpenBlock(b)}><Icon name={b.done?"check":"calendar"} size={13}/><span className="d">{WEEKDAYS[(s.getDay()+6)%7]} {s.getDate()} {MONTHS[s.getMonth()].slice(0,3)} · {timeStr(s)}–{timeStr(en)}</span><span>{fmtDur((en-s)/60000)}</span></button>);})}</div>}
+            <button className="gp-btn ghost sm" onClick={()=>onPlan(draft)}><Icon name="plus" size={14}/> Pianifica una sessione</button>
+            <p className="gp-nt-p" style={{marginTop:6}}>Le sessioni compaiono nel calendario come blocchi collegati a questo task. Le modifiche qui sopra vengono salvate.</p>
+          </>)}
           <label className="gp-lbl"><Icon name="note" size={13} style={{marginRight:5}}/>Note</label>
           <RichNote key={draft.id||"new"} value={draft.note} onChange={(v)=>set({note:v})}/>
           <label className="gp-lbl"><Icon name="list" size={13} style={{marginRight:5}}/>Sotto-attività</label>
@@ -2184,6 +2289,76 @@ function EventModal({draft,activities,bus,onChange,onClose,onSave,onDelete}){
           {!draft._isNew?<button className="gp-btn ghost danger" onClick={()=>onDelete(draft.id)}><Icon name="trash" size={15}/> Elimina</button>:<span/>}
           <div className="gp-foot-right"><button className="gp-btn ghost" onClick={onClose}>Annulla</button><button className="gp-btn solid" onClick={()=>onSave(draft)}><Icon name="check" size={16}/> Salva</button></div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---- Sessione di lavoro (blocco di un task nel calendario) ---- */
+function BlockSheet({draft,task,buMap,onChange,onClose,onSave,onDelete,onOpenTask}){
+  const set=(p)=>onChange({...draft,...p});
+  if(!task)return null;
+  const bu=task.buId&&buMap[task.buId];
+  const dur=Math.max(0,(combine(draft.date,draft.end)-combine(draft.date,draft.start))/60000);
+  const setDur=(min)=>{const en=new Date(combine(draft.date,draft.start).getTime()+min*60000);set({end:toDateKey(en)===draft.date?timeStr(en):"23:59"});};
+  const setStart=(st)=>{const d=dur>0?dur:60;const en=new Date(combine(draft.date,st).getTime()+d*60000);set({start:st,end:toDateKey(en)===draft.date?timeStr(en):"23:59"});};
+  return (
+    <div className="gp-overlay center" onClick={onClose}>
+      <div className="gp-modal" style={{maxWidth:440}} onClick={(e)=>e.stopPropagation()}>
+        <div className="gp-modal-head"><h2><Icon name="calendar" size={18}/> {draft.id?"Sessione di lavoro":"Pianifica sessione"}</h2><button className="gp-icon" onClick={onClose}><Icon name="x"/></button></div>
+        <div className="gp-modal-body">
+          <button className="gp-blockrow" style={{width:"100%",borderLeft:`4px solid ${task.color}`}} onClick={()=>onOpenTask(task)} title="Apri il task">
+            <span className="d"><b>{task.title}</b>{bu?<span style={{color:"#8A7A6B"}}> · {bu.name}</span>:null}</span><Icon name="edit" size={14}/>
+          </button>
+          <label className="gp-lbl">Giorno</label>
+          <input className="gp-input" type="date" value={draft.date} onChange={(e)=>set({date:e.target.value})}/>
+          <div className="gp-row2">
+            <div><label className="gp-lbl">Dalle</label><input className="gp-input" type="time" value={draft.start} onChange={(e)=>setStart(e.target.value)}/></div>
+            <div><label className="gp-lbl">Alle</label><input className="gp-input" type="time" value={draft.end} onChange={(e)=>set({end:e.target.value})}/></div>
+          </div>
+          <div className="gp-durchips">{[30,60,90,120,180,240].map((m)=>(<button key={m} className={`gp-chip ${Math.round(dur)===m?"on":""}`} onClick={()=>setDur(m)}>{fmtDur(m)}</button>))}</div>
+          {draft.id&&<div className={`gp-toggle ${draft.done?"on":""}`} style={{marginTop:14}} onClick={()=>set({done:!draft.done})}><div className="sw"/><span className="txt">Sessione svolta</span></div>}
+          {!task.done&&<div className={`gp-toggle ${draft.taskDone?"on":""}`} style={{marginTop:8}} onClick={()=>set({taskDone:!draft.taskDone,done:!draft.taskDone?true:draft.done})}><div className="sw"/><span className="txt">Segna anche il task come completato</span></div>}
+          <p className="gp-nt-p" style={{marginTop:10}}>La sessione resta collegata al task: titolo e colore seguono il task, e se lo elimini sparisce anche lei. Riceverai l'avviso prima dell'inizio, come per gli altri impegni.</p>
+        </div>
+        <div className="gp-modal-foot">
+          {draft.id?<button className="gp-btn ghost danger" onClick={()=>onDelete(draft.id)}><Icon name="trash" size={15}/> Elimina</button>:<span/>}
+          <div className="gp-foot-right"><button className="gp-btn ghost" onClick={onClose}>Annulla</button><button className="gp-btn solid" onClick={()=>onSave(draft)}><Icon name="check" size={16}/> Salva</button></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---- Pannello "Da pianificare": task del Planner da trascinare nel calendario ---- */
+function TaskTray({tasks,bus,buMap,blocksByTask,onPlan,onOpen,onClose,sheet}){
+  const plannerBus=useMemo(()=>{const f=bus.filter((b)=>b.inPlanner===true);return f.length?f:bus;},[bus]);
+  const [sel,setSelRaw]=useState(()=>lsGet("gp_tray_sel")||"all");
+  const setSel=(v)=>{setSelRaw(v);lsSet("gp_tray_sel",v);};
+  const [q,setQ]=useState("");
+  const effSel=plannerBus.find((b)=>b.id===sel)?sel:"all";
+  const PR={alta:0,media:1,bassa:2};
+  const list=useMemo(()=>{const ids=new Set(plannerBus.map((b)=>b.id));const qq=q.trim().toLowerCase();
+    return tasks.filter((t)=>!t.done&&showInPlanner(t)&&(effSel==="all"?ids.has(t.buId):t.buId===effSel)&&(!qq||(t.title||"").toLowerCase().includes(qq)))
+      .sort((a,b)=>(PR[a.prio]??3)-(PR[b.prio]??3)||new Date(a.end)-new Date(b.end));},[tasks,plannerBus,effSel,q]);
+  return (
+    <div className={sheet?"":"gp-tray"} style={sheet?{display:"flex",flexDirection:"column",minHeight:0,flex:1}:undefined}>
+      <div className="gp-tray-h"><span className="nm"><Icon name="list" size={15}/> Da pianificare</span><button className="gp-icon" onClick={onClose}><Icon name="x" size={15}/></button></div>
+      <div className="gp-tray-hint">{sheet?"Tocca un task per scegliere giorno e ora della sessione.":"Trascina un task su un orario del calendario, oppure cliccalo per scegliere giorno e ora."}</div>
+      {plannerBus.length>1&&<div className="gp-chips">
+        <button className={`gp-chip ${effSel==="all"?"on":""}`} onClick={()=>setSel("all")}>Tutti</button>
+        {plannerBus.map((b)=>(<button key={b.id} className={`gp-chip ${effSel===b.id?"on":""}`} style={effSel===b.id?{borderColor:b.color,background:hexToRgba(b.color,0.12)}:{}} onClick={()=>setSel(b.id)}><span className="dot" style={{background:b.color}}/> {b.name}</button>))}
+      </div>}
+      <input className="gp-input sm" placeholder="Cerca un task…" value={q} onChange={(e)=>setQ(e.target.value)} style={{marginBottom:8}}/>
+      <div className="gp-tray-list">
+        {list.length===0&&<div className="gp-tray-empty">Nessun task aperto qui.</div>}
+        {list.map((t)=>{const bl=blocksByTask[t.id]||[];const di=dueInfo(t.end);const bu=t.buId&&buMap[t.buId];
+          return (<button key={t.id} className="gp-tray-item" style={{borderLeftColor:t.color}} draggable={!sheet}
+            onDragStart={(e)=>{e.dataTransfer.setData("text/gp-task",t.id);e.dataTransfer.effectAllowed="move";}}
+            onClick={()=>onPlan(t)} onDoubleClick={()=>onOpen(t)} title="Trascina nel calendario o clicca per pianificare">
+            <span className="t">{t.title}</span>
+            <span className="m">{bu&&<span>{bu.name}</span>}<span>{di.date} · {di.phrase}</span>{t.prio&&<span>· {{alta:"Alta",media:"Media",bassa:"Bassa"}[t.prio]}</span>}{bl.length>0&&<span className="pl">· {fmtDur(blockMinutes(bl))} pianificate</span>}</span>
+          </button>);})}
       </div>
     </div>
   );
