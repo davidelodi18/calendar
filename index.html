@@ -387,6 +387,15 @@
   .gp-work .gp-kpi{display:flex;align-items:baseline;gap:8px;padding:6px 12px;border-radius:10px;box-shadow:none}
   .gp-work .gp-kpi .kval{font-size:18px;margin-top:0}
   .gp-work .gp-kpi .klabel{font-size:10.5px}
+  .gp-kpi.clic{cursor:pointer}
+  .gp-kpi.clic:hover{border-color:#C9A0A0;background:#FBF1F1}
+  .gp-latelist{background:#FFFDF8;border:1px solid #E8C9C9;border-radius:12px;padding:6px;margin:-2px 0 12px;max-height:260px;overflow:auto}
+  .gp-latehead{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;font-size:13px;color:#9E4444}
+  .gp-lateitem{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:transparent;padding:7px 8px;border-radius:8px;cursor:pointer;font:inherit}
+  .gp-lateitem:hover{background:#F8EDED}
+  .gp-lateitem .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .gp-lateitem .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px;font-weight:600}
+  .gp-lateitem .d{font-size:12px;color:#9E4444;white-space:nowrap}
 
   /* PLANNER a schede */
   .gp-plsum{display:flex;align-items:center;gap:8px;font-size:13px;color:#8A7A6D;font-weight:600;margin:2px 2px 14px}
@@ -672,7 +681,7 @@ const { useState, useEffect, useRef, useMemo, useCallback } = React;
 /* ================= APP INSTALLABILE + NOTIFICHE PUSH ================= */
 const VAPID_KEY="BBsTB5it-7qRX54uHdjDE__7hoaggX3H4QfPrw0Ene3f4X4p0Lv5ASPrS_1NYb8O9DATS0glIY4nQpEVE7Iy8YM"; // chiave pubblica web push (Firebase → Cloud Messaging)
 /* ---- versione e aggiornamento ---- */
-const APP_VERSION="2.3.0";
+const APP_VERSION="2.3.1";
 async function fetchRemoteVersion(){
   try{const t=await (await fetch("./index.html?nocache="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const APP_VERSION="([^"]+)"/);return m?m[1]:null;}catch(e){return null;}
 }
@@ -1261,8 +1270,8 @@ function GanttView({start,events,bus,buFilter,onNew,onEvent,onToggle}){
   const today=startOfDay(new Date());
   const inRange=events.filter((ev)=>new Date(ev.end)>=start&&new Date(ev.start)<rangeEnd);
 
-  const total=events.length, done=events.filter((e)=>e.done).length;
-  const todo=total-done, late=events.filter((e)=>!e.done&&new Date(e.end)<today).length;
+  const total=events.length, done=events.filter((e)=>stOf(e)==="done").length;
+  const todo=total-done, late=events.filter((e)=>stOf(e)!=="done"&&startOfDay(new Date(e.end))<today).length;
 
   const groups=[...bus.map((b)=>({id:b.id,name:b.name,color:b.color})),{id:null,name:"Senza BU",color:"#A89683"}]
     .map((g)=>({...g,items:inRange.filter((e)=>(e.buId||null)===g.id).sort((a,b)=>new Date(a.start)-new Date(b.start))}))
@@ -1345,9 +1354,14 @@ function WorkView({events,blocks=[],blocksByTask={},onPlan,onDropItem,agenda=[],
   const workCal=useMemo(()=>{const ids=new Set(plannerBus.map((b)=>b.id));return [...workEvents.filter((e)=>e.inCalendar!==false),...blocks.filter((e)=>effSel==="all"?ids.has(e.buId):e.buId===effSel)];},[workEvents,blocks,plannerBus,effSel]);
   const newBuId=effSel!=="all"?effSel:((plannerBus.find((b)=>b.id===workBuId)||plannerBus[0]||{}).id||null);
 
+  /* i numeri in alto contano solo i task del Planner (non gli appuntamenti solo-calendario),
+     con la stessa regola dell'elenco: in ritardo = non completato e scadenza prima di oggi */
   const today=startOfDay(new Date());
-  const total=workEvents.length, done=workEvents.filter((e)=>e.done).length;
-  const todo=total-done, late=workEvents.filter((e)=>!e.done&&new Date(e.end)<today).length;
+  const kpiEv=workEvents.filter(showInPlanner);
+  const total=kpiEv.length, done=kpiEv.filter((e)=>stOf(e)==="done").length;
+  const lateList=kpiEv.filter((e)=>stOf(e)!=="done"&&startOfDay(new Date(e.end))<today).sort((a,b)=>new Date(a.end)-new Date(b.end));
+  const todo=total-done, late=lateList.length;
+  const [vediLate,setVediLate]=useState(false);
 
   const weekDays=useMemo(()=>{const s=startOfWeek(cursor);return Array.from({length:7},(_,i)=>addDays(s,i));},[cursor]);
   const shift=(n)=>{
@@ -1402,8 +1416,16 @@ function WorkView({events,blocks=[],blocksByTask={},onPlan,onDropItem,agenda=[],
         <div className="gp-kpi"><div className="klabel">Totali</div><div className="kval">{total}</div></div>
         <div className="gp-kpi done"><div className="klabel">Completati</div><div className="kval">{done}</div></div>
         <div className="gp-kpi"><div className="klabel">Da fare</div><div className="kval">{todo}</div></div>
-        <div className="gp-kpi late"><div className="klabel">In ritardo</div><div className="kval">{late}</div></div>
+        <div className={`gp-kpi late ${late?"clic":""}`} onClick={()=>late&&setVediLate(!vediLate)} title={late?"Vedi quali sono":""}><div className="klabel">In ritardo</div><div className="kval">{late}</div></div>
       </div>
+      {vediLate&&late>0&&<div className="gp-latelist">
+        <div className="gp-latehead"><b>In ritardo</b><button className="gp-icon" onClick={()=>setVediLate(false)}><Icon name="x" size={14}/></button></div>
+        {lateList.map((e)=>{const di=dueInfo(e.end);return (
+          <button key={e.id} className="gp-lateitem" onClick={()=>onEvent(e)}>
+            <span className="dot" style={{background:e.color||workColor}}/><span className="t">{e.title}</span>
+            <span className="d">{di.date} · {di.phrase}{e.buId&&buMap[e.buId]&&effSel==="all"?" · "+buMap[e.buId].name:""}</span>
+          </button>);})}
+      </div>}
 
       {bus.length===0 ? (
         <div className="gp-panel"><div className="gp-empty">Non hai ancora Business Unit. Creane una (es. “Lavoro”, “Pro Loco”) per popolare il Planner.<br/><button className="gp-btn ghost sm" style={{marginTop:12}} onClick={onManageBu}><Icon name="settings" size={14}/> Gestisci Business Unit</button></div></div>
