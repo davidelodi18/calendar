@@ -656,7 +656,7 @@ const { useState, useEffect, useRef, useMemo } = React;
 /* ================= APP INSTALLABILE + NOTIFICHE PUSH ================= */
 const VAPID_KEY="BBsTB5it-7qRX54uHdjDE__7hoaggX3H4QfPrw0Ene3f4X4p0Lv5ASPrS_1NYb8O9DATS0glIY4nQpEVE7Iy8YM"; // chiave pubblica web push (Firebase → Cloud Messaging)
 /* ---- versione e aggiornamento ---- */
-const APP_VERSION="2.1.0";
+const APP_VERSION="2.2.0";
 async function fetchRemoteVersion(){
   try{const t=await (await fetch("./index.html?nocache="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const APP_VERSION="([^"]+)"/);return m?m[1]:null;}catch(e){return null;}
 }
@@ -889,9 +889,6 @@ function Scheduler({user}){
   const [workBuId,setWorkBuId]=useState(null);
   const [moreOpen,setMoreOpen]=useState(false);
   const [blockEdit,setBlockEdit]=useState(null); // sessione di lavoro aperta
-  const [tray,setTrayRaw]=useState(()=>lsGet("gp_tray")!=="0");
-  const setTray=(v)=>{setTrayRaw(v);lsSet("gp_tray",v?"1":"0");};
-  const [traySheet,setTraySheet]=useState(false);
   const wrapRef=useRef(null);
   // ogni cambio di sezione riparte dall'alto (niente scroll "ereditato" dalla sezione precedente)
   useEffect(()=>{if(wrapRef.current)wrapRef.current.scrollTop=0;},[view]);
@@ -988,7 +985,7 @@ function Scheduler({user}){
   const blocksByTask=useMemo(()=>{const m={};blocks.forEach((b)=>(m[b.taskId]=m[b.taskId]||[]).push(b));Object.values(m).forEach((l)=>l.sort((a,b)=>new Date(a.start)-new Date(b.start)));return m;},[blocks]);
   const planTask=(task,dateKey,h,m=0)=>{
     let k=dateKey,hh=h;
-    if(!k){k=toDateKey(view==="day"?cursor:new Date());}
+    if(!k){k=toDateKey(new Date());}
     if(hh===undefined){const now=new Date();hh=k===toDateKey(now)?Math.min(22,now.getHours()+1):9;}
     const st=`${pad(hh)}:${pad(m)}`;const en=new Date(combine(k,st).getTime()+60*60000);
     setBlockEdit({id:null,taskId:task.id,date:k,start:st,end:timeStr(en),done:false});
@@ -1065,8 +1062,6 @@ function Scheduler({user}){
         <div className="gp-brand"><div className="gp-logo"><LogoMark/></div><div><div className="gp-title">Giornata</div><div className="gp-sub">{periodLabel}</div></div></div>
         {(hasNav||hasBuSel) && <div className="gp-tools">
           {hasNav && <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>}
-          {(view==="day"||view==="week") && <button className={`gp-icon ${tray?"on":""} hide-sm`} title="Task da pianificare" onClick={()=>setTray(!tray)}><Icon name="list" size={16}/></button>}
-          {(view==="day"||view==="week") && <button className="gp-icon show-sm" title="Task da pianificare" onClick={()=>setTraySheet(true)}><Icon name="list" size={16}/></button>}
           {hasBuSel && (<select className="gp-select" value={buFilter} onChange={(e)=>setBuFilter(e.target.value)}>
             <option value="all">Tutte le BU</option>
             {bus.map((b)=><option key={b.id} value={b.id}>{b.name}</option>)}
@@ -1089,16 +1084,14 @@ function Scheduler({user}){
       <UpdateWatcher/>
       <main className="gp-wrap" ref={wrapRef}>
         {(view==="day"||view==="week") &&
-          <div className="gp-calrow gp-fill">
-            <div className="gp-panel gp-fill"><DayWeek days={days} view={view} events={calShown} buMap={buMap} onSlot={newEventAt} onEvent={openEvent} onDropItem={dropOnCalendar}/></div>
-            {tray&&<TaskTray tasks={tasks} bus={bus} buMap={buMap} blocksByTask={blocksByTask} onPlan={(t)=>planTask(t)} onOpen={openEvent} onClose={()=>setTray(false)}/>}
-          </div>}
+          <div className="gp-panel gp-fill"><DayWeek days={days} view={view} events={calShown} buMap={buMap} onSlot={newEventAt} onEvent={openEvent} onDropItem={dropOnCalendar}/></div>}
         {view==="month" &&
           <div className="gp-panel gp-month gp-fill"><MonthView cursor={cursor} events={calShown} buMap={buMap} onDay={(k)=>newEventAt(k,9)} onEvent={openEvent}/></div>}
         {view==="gantt" &&
           <GanttView start={ganttStart} events={shown.filter((e)=>e.inGantt!==false)} bus={bus} buFilter={buFilter} onNew={()=>newEventAt(toDateKey(new Date()),9)} onEvent={openEvent} onToggle={toggleDone}/>}
         {view==="lavoro" &&
-          <WorkView events={tasks} blocks={blocks} blocksByTask={blocksByTask} onPlan={(t)=>planTask(t)} bus={bus} buMap={buMap} workBuId={workBuId} setWorkBuId={setWorkBuId} onEvent={openEvent} onToggle={toggleDone} onNewWithBu={newEventWithBu} onManageBu={()=>setManage("bu")} onPatch={patchEvent}/>}
+          <WorkView events={tasks} blocks={blocks} blocksByTask={blocksByTask} onPlan={(t,k)=>planTask(t,k)} onDropItem={dropOnCalendar}
+            agenda={[...tasks.filter((e)=>e.inCalendar!==false),...blocks]} bus={bus} buMap={buMap} workBuId={workBuId} setWorkBuId={setWorkBuId} onEvent={openEvent} onToggle={toggleDone} onNewWithBu={newEventWithBu} onManageBu={()=>setManage("bu")} onPatch={patchEvent}/>}
         {view==="archive" &&
           <ArchiveView events={shown.filter((e)=>e.done)} buMap={buMap} onEvent={openEvent} onToggle={toggleDone} onDelete={deleteEvent}/>}
         {view==="priority" &&
@@ -1133,11 +1126,7 @@ function Scheduler({user}){
         onPlan={async(d)=>{const t=taskMap[d.id];await submitEvent(d);if(t)planTask(t);}}/>}
       {blockEdit && <BlockSheet draft={blockEdit} task={taskMap[blockEdit.taskId]} buMap={buMap} onChange={setBlockEdit} onClose={()=>setBlockEdit(null)} onSave={saveBlock} onDelete={deleteBlock}
         onOpenTask={(t)=>{setBlockEdit(null);openEvent(t);}}/>}
-      {traySheet && <div className="gp-sheet-ov" onClick={()=>setTraySheet(false)}>
-        <div className="gp-sheet" style={{height:"78vh",display:"flex",flexDirection:"column"}} onClick={(e)=>e.stopPropagation()}>
-          <TaskTray sheet tasks={tasks} bus={bus} buMap={buMap} blocksByTask={blocksByTask} onPlan={(t)=>{setTraySheet(false);planTask(t);}} onOpen={(t)=>{setTraySheet(false);openEvent(t);}} onClose={()=>setTraySheet(false)}/>
-        </div>
-      </div>}
+
     </div>
   );
 }
@@ -1275,8 +1264,11 @@ function GanttView({start,events,bus,buFilter,onNew,onEvent,onToggle}){
 }
 
 /* ---- Sezione Lavoro: calendario + Gantt dedicati ---- */
-function WorkView({events,blocks=[],blocksByTask={},onPlan,bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewWithBu,onManageBu,onPatch}){
-  const [sub,setSub]=useState("planner");          // planner | month | week | gantt
+function WorkView({events,blocks=[],blocksByTask={},onPlan,onDropItem,agenda=[],bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewWithBu,onManageBu,onPatch}){
+  const [sub,setSub]=useState("planner");          // planner | day | week | month | gantt
+  const [tray,setTrayRaw]=useState(()=>lsGet("gp_tray")!=="0");
+  const setTray=(v)=>{setTrayRaw(v);lsSet("gp_tray",v?"1":"0");};
+  const [traySheet,setTraySheet]=useState(false);
   const [cursor,setCursor]=useState(()=>startOfDay(new Date()));
   const [gStart,setGStart]=useState(()=>startOfWeek(new Date()));
 
@@ -1299,20 +1291,24 @@ function WorkView({events,blocks=[],blocksByTask={},onPlan,bus,buMap,workBuId,se
   const shift=(n)=>{
     if(sub==="gantt") setGStart((g)=>addDays(g,n*7));
     else if(sub==="week") setCursor((c)=>addDays(c,n*7));
+    else if(sub==="day") setCursor((c)=>addDays(c,n));
     else setCursor((c)=>new Date(c.getFullYear(),c.getMonth()+n,1));
   };
   const goToday=()=>{setCursor(startOfDay(new Date()));setGStart(startOfWeek(new Date()));};
 
   const label=useMemo(()=>{
     if(sub==="month") return `${MONTHS[cursor.getMonth()]} ${cursor.getFullYear()}`;
+    if(sub==="day"){const wd=["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"][cursor.getDay()];return `${wd} ${cursor.getDate()} ${MONTHS[cursor.getMonth()]}`;}
     if(sub==="week"){const s=weekDays[0],e=weekDays[6];return s.getMonth()===e.getMonth()?`${s.getDate()}–${e.getDate()} ${MONTHS[s.getMonth()]} ${s.getFullYear()}`:`${s.getDate()} ${MONTHS[s.getMonth()].slice(0,3)} – ${e.getDate()} ${MONTHS[e.getMonth()].slice(0,3)}`;}
     const e=addDays(gStart,GANTT_DAYS-1);return `${gStart.getDate()} ${MONTHS[gStart.getMonth()].slice(0,3)} – ${e.getDate()} ${MONTHS[e.getMonth()].slice(0,3)}`;
   },[sub,cursor,weekDays,gStart]);
 
   const newHour=Math.min(23,Math.max(new Date().getHours(),8));
-  const addWork=()=>onNewWithBu(toDateKey(sub==="month"||sub==="week"?cursor:new Date()),9,0,newBuId,60,sub==="planner"?{plannerOnly:true}:{});
+  const addWork=()=>onNewWithBu(toDateKey(sub==="month"||sub==="week"||sub==="day"?cursor:new Date()),9,0,newBuId,60,sub==="planner"?{plannerOnly:true}:{});
 
-  const SUBS=[["planner","Planner","list"],["month","Mese","grid"],["week","Settimana","calendar"],["gantt","Gantt","gantt"]];
+  const SUBS=[["planner","Planner","list"],["day","Giorno","calendar"],["week","Settimana","calendar"],["month","Mese","grid"],["gantt","Gantt","gantt"]];
+  const trayTasks=workEvents.filter(showInPlanner);
+  const planHere=(t)=>onPlan&&onPlan(t,toDateKey(sub==="day"?cursor:new Date()));
 
   return (
     <div className={`gp-work ${sub!=="planner"&&bus.length>0?"gp-fillcol":""}`}>
@@ -1333,6 +1329,8 @@ function WorkView({events,blocks=[],blocksByTask={},onPlan,bus,buMap,workBuId,se
         {sub!=="planner" && <div className="gp-worknav">
           <span className="gp-worklbl hide-sm">{label}</span>
           <div className="gp-nav"><button onClick={()=>shift(-1)}><Icon name="left"/></button><button className="today" onClick={goToday}>Oggi</button><button onClick={()=>shift(1)}><Icon name="right"/></button></div>
+          {(sub==="day"||sub==="week")&&<button className={`gp-btn ${tray?"solid":"ghost"} sm hide-sm`} onClick={()=>setTray(!tray)}><Icon name="list" size={14}/> Da pianificare</button>}
+          {(sub==="day"||sub==="week")&&<button className="gp-icon show-sm" title="Task da pianificare" onClick={()=>setTraySheet(true)}><Icon name="list" size={16}/></button>}
         </div>}
       </div>
       {sub!=="planner" && <div className="gp-worksub">{label}</div>}
@@ -1351,8 +1349,16 @@ function WorkView({events,blocks=[],blocksByTask={},onPlan,bus,buMap,workBuId,se
           <PlannerView events={workEvents.filter(showInPlanner)} color={workColor} onEvent={onEvent} onPatch={onPatch} onPlan={onPlan} blocksByTask={blocksByTask} onNew={()=>onNewWithBu(toDateKey(new Date()),9,0,newBuId,60,{plannerOnly:true})}/>}
         {sub==="month" &&
           <div className="gp-panel gp-month gp-fill"><MonthView cursor={cursor} events={workCal} buMap={buMap} onDay={(k)=>onNewWithBu(k,9,0,newBuId,60)} onEvent={onEvent}/></div>}
-        {sub==="week" &&
-          <div className="gp-panel gp-fill"><DayWeek days={weekDays} view="week" events={workCal} buMap={buMap} onSlot={(k,h,m)=>onNewWithBu(k,h,m,newBuId,60)} onEvent={onEvent}/></div>}
+        {(sub==="week"||sub==="day") &&
+          <div className="gp-calrow gp-fill">
+            <div className="gp-panel gp-fill"><DayWeek days={sub==="day"?[cursor]:weekDays} view={sub} events={agenda} buMap={buMap} onSlot={(k,h,m)=>onNewWithBu(k,h,m,newBuId,60)} onEvent={onEvent} onDropItem={onDropItem}/></div>
+            {tray&&<TaskTray noFilter tasks={trayTasks} bus={bus} buMap={buMap} blocksByTask={blocksByTask} onPlan={planHere} onOpen={onEvent} onClose={()=>setTray(false)}/>}
+          </div>}
+        {traySheet && <div className="gp-sheet-ov" onClick={()=>setTraySheet(false)}>
+          <div className="gp-sheet" style={{height:"78vh",display:"flex",flexDirection:"column"}} onClick={(e)=>e.stopPropagation()}>
+            <TaskTray sheet noFilter tasks={trayTasks} bus={bus} buMap={buMap} blocksByTask={blocksByTask} onPlan={(t)=>{setTraySheet(false);planHere(t);}} onOpen={(t)=>{setTraySheet(false);onEvent(t);}} onClose={()=>setTraySheet(false)}/>
+          </div>
+        </div>}
         {sub==="gantt" &&
           <div className="gp-panel gp-gantt gp-fill"><div className="gp-gantt-inner">
             <div className="gp-grow gp-ghead">
@@ -2331,7 +2337,7 @@ function BlockSheet({draft,task,buMap,onChange,onClose,onSave,onDelete,onOpenTas
 }
 
 /* ---- Pannello "Da pianificare": task del Planner da trascinare nel calendario ---- */
-function TaskTray({tasks,bus,buMap,blocksByTask,onPlan,onOpen,onClose,sheet}){
+function TaskTray({tasks,bus,buMap,blocksByTask,onPlan,onOpen,onClose,sheet,noFilter}){
   const plannerBus=useMemo(()=>{const f=bus.filter((b)=>b.inPlanner===true);return f.length?f:bus;},[bus]);
   const [sel,setSelRaw]=useState(()=>lsGet("gp_tray_sel")||"all");
   const setSel=(v)=>{setSelRaw(v);lsSet("gp_tray_sel",v);};
@@ -2339,13 +2345,13 @@ function TaskTray({tasks,bus,buMap,blocksByTask,onPlan,onOpen,onClose,sheet}){
   const effSel=plannerBus.find((b)=>b.id===sel)?sel:"all";
   const PR={alta:0,media:1,bassa:2};
   const list=useMemo(()=>{const ids=new Set(plannerBus.map((b)=>b.id));const qq=q.trim().toLowerCase();
-    return tasks.filter((t)=>!t.done&&showInPlanner(t)&&(effSel==="all"?ids.has(t.buId):t.buId===effSel)&&(!qq||(t.title||"").toLowerCase().includes(qq)))
-      .sort((a,b)=>(PR[a.prio]??3)-(PR[b.prio]??3)||new Date(a.end)-new Date(b.end));},[tasks,plannerBus,effSel,q]);
+    return tasks.filter((t)=>!t.done&&showInPlanner(t)&&(noFilter||(effSel==="all"?ids.has(t.buId):t.buId===effSel))&&(!qq||(t.title||"").toLowerCase().includes(qq)))
+      .sort((a,b)=>(PR[a.prio]??3)-(PR[b.prio]??3)||new Date(a.end)-new Date(b.end));},[tasks,plannerBus,effSel,q,noFilter]);
   return (
     <div className={sheet?"":"gp-tray"} style={sheet?{display:"flex",flexDirection:"column",minHeight:0,flex:1}:undefined}>
       <div className="gp-tray-h"><span className="nm"><Icon name="list" size={15}/> Da pianificare</span><button className="gp-icon" onClick={onClose}><Icon name="x" size={15}/></button></div>
-      <div className="gp-tray-hint">{sheet?"Tocca un task per scegliere giorno e ora della sessione.":"Trascina un task su un orario del calendario, oppure cliccalo per scegliere giorno e ora."}</div>
-      {plannerBus.length>1&&<div className="gp-chips">
+      <div className="gp-tray-hint">{sheet?"Tocca un task per scegliere giorno e ora della sessione.":"Trascina un task su un orario, oppure cliccalo per scegliere giorno e ora. Nel calendario vedi anche i tuoi impegni, così trovi i buchi liberi."}</div>
+      {!noFilter&&plannerBus.length>1&&<div className="gp-chips">
         <button className={`gp-chip ${effSel==="all"?"on":""}`} onClick={()=>setSel("all")}>Tutti</button>
         {plannerBus.map((b)=>(<button key={b.id} className={`gp-chip ${effSel===b.id?"on":""}`} style={effSel===b.id?{borderColor:b.color,background:hexToRgba(b.color,0.12)}:{}} onClick={()=>setSel(b.id)}><span className="dot" style={{background:b.color}}/> {b.name}</button>))}
       </div>}
