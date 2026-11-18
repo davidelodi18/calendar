@@ -137,6 +137,17 @@
 
   /* GANTT */
   .gp-gantt-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+  /* zoom delle ore e maniglia del calendario */
+  .gp-zoom{display:flex;align-items:center;gap:4px;margin-left:auto;background:#FFFDF8;border:1px solid #E4D7C2;border-radius:10px;padding:3px 5px}
+  .gp-zoom button{border:0;background:transparent;font-size:16px;line-height:1;width:26px;height:26px;border-radius:7px;cursor:pointer;color:#5A4A3D}
+  .gp-zoom button:hover{background:#F4ECDF}
+  .gp-zoom button.fit{width:auto;font-size:12px;font-weight:700;padding:0 8px}
+  .gp-zoom input[type=range]{width:96px;accent-color:#C75D3A}
+  .gp-maniglia{flex:none;height:14px;display:flex;align-items:center;justify-content:center;cursor:ns-resize;touch-action:none;margin-top:2px}
+  .gp-maniglia span{width:56px;height:5px;border-radius:3px;background:#D9CBB3}
+  .gp-maniglia:hover span{background:#C75D3A}
+  body.gp-trascino{cursor:ns-resize;user-select:none;-webkit-user-select:none}
+  .gp-fissa{flex:none !important;min-height:0 !important}
   .gp-kpi{background:#FFFDF8;border:1px solid #E4D7C2;border-radius:14px;padding:14px 16px;box-shadow:0 4px 14px rgba(90,74,61,.05)}
   .gp-kpi .klabel{font-size:11px;font-weight:800;color:#8A7A6D;text-transform:uppercase;letter-spacing:.4px}
   .gp-kpi .kval{font-family:'Fraunces',serif;font-weight:600;font-size:30px;margin-top:4px;line-height:1}
@@ -371,6 +382,11 @@
   .gp-workbadge{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;box-shadow:0 3px 10px rgba(90,74,61,.18)}
   .gp-worksub{display:none;font-size:13px;font-weight:700;color:#8A7A6D;margin:-6px 0 12px}
   .gp-work .gp-gantt-kpis{margin-bottom:14px}
+  /* nel Planner i riquadri dei numeri sono una striscia bassa: lo spazio va al calendario */
+  .gp-work .gp-gantt-kpis{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+  .gp-work .gp-kpi{display:flex;align-items:baseline;gap:8px;padding:6px 12px;border-radius:10px;box-shadow:none}
+  .gp-work .gp-kpi .kval{font-size:18px;margin-top:0}
+  .gp-work .gp-kpi .klabel{font-size:10.5px}
 
   /* PLANNER a schede */
   .gp-plsum{display:flex;align-items:center;gap:8px;font-size:13px;color:#8A7A6D;font-weight:600;margin:2px 2px 14px}
@@ -651,12 +667,12 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-const { useState, useEffect, useRef, useMemo } = React;
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
 /* ================= APP INSTALLABILE + NOTIFICHE PUSH ================= */
 const VAPID_KEY="BBsTB5it-7qRX54uHdjDE__7hoaggX3H4QfPrw0Ene3f4X4p0Lv5ASPrS_1NYb8O9DATS0glIY4nQpEVE7Iy8YM"; // chiave pubblica web push (Firebase → Cloud Messaging)
 /* ---- versione e aggiornamento ---- */
-const APP_VERSION="2.2.0";
+const APP_VERSION="2.3.0";
 async function fetchRemoteVersion(){
   try{const t=await (await fetch("./index.html?nocache="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const APP_VERSION="([^"]+)"/);return m?m[1]:null;}catch(e){return null;}
 }
@@ -706,6 +722,30 @@ const PUSH_DEFAULTS={startAlerts:true,leadMin:15,dueAlerts:true,dueLead:1440,dig
 const LS_TOKEN="gp-push-token";
 const lsGet=(k)=>{try{return localStorage.getItem(k);}catch(e){return null;}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+/* vista del calendario regolabile: altezza delle ore (zoom) e altezza del riquadro (maniglia sotto), ricordate su questo dispositivo */
+function useVistaCal(){
+  const [hourH,setH]=useState(()=>{const v=parseFloat(lsGet("gp_hourH"));return v>=18&&v<=140?v:56;});
+  const setHourH=useCallback((v)=>{v=Math.max(18,Math.min(140,v));setH(v);lsSet("gp_hourH",String(Math.round(v)));},[]);
+  const [calH,setC]=useState(()=>{const v=parseInt(lsGet("gp_calH"),10);return v>=260?v:null;});
+  const setCalH=useCallback((v)=>{setC(v);lsSet("gp_calH",v?String(Math.round(v)):"");},[]);
+  return {hourH,setHourH,calH,setCalH};
+}
+function ZoomOre({hourH,setHourH,onAdatta}){
+  return (<div className="gp-zoom" title="Altezza delle ore — anche con Ctrl/⌘ + rotellina o pizzicando il trackpad">
+    <button onClick={()=>setHourH(hourH/1.25)} aria-label="Riduci le ore">−</button>
+    <input className="hide-sm" type="range" min="18" max="140" value={Math.round(hourH)} onChange={(e)=>setHourH(+e.target.value)}/>
+    <button onClick={()=>setHourH(hourH*1.25)} aria-label="Ingrandisci le ore">+</button>
+    <button className="fit" onClick={onAdatta} title="Fai stare tutta la giornata di lavoro nel riquadro">Giornata</button>
+  </div>);
+}
+/* maniglia sotto il calendario: si trascina come i pannelli di Final Cut; doppio clic = altezza automatica */
+function ManigliaCal({boxRef,setCalH}){
+  const giu=(e)=>{e.preventDefault();const box=boxRef.current;if(!box)return;const y0=e.clientY,h0=box.getBoundingClientRect().height;
+    const mv=(ev)=>setCalH(Math.max(260,h0+ev.clientY-y0));
+    const su=()=>{window.removeEventListener("pointermove",mv);window.removeEventListener("pointerup",su);document.body.classList.remove("gp-trascino");};
+    document.body.classList.add("gp-trascino");window.addEventListener("pointermove",mv);window.addEventListener("pointerup",su);};
+  return <div className="gp-maniglia" onPointerDown={giu} onDoubleClick={()=>setCalH(null)} title="Trascina per allungare o accorciare il calendario · doppio clic: altezza automatica"><span/></div>;
+}
 const lsDel=(k)=>{try{localStorage.removeItem(k);}catch(e){}};
 const tokenDocId=(t)=>t.replace(/\//g,"_");
 const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
@@ -757,7 +797,7 @@ function useMedia(q){
 const MOBILE_Q="(max-width:680px)";
 
 /* ---- helper ---- */
-const HOUR_H = 56, DAY_START = 0, DAY_END = 24, GANTT_COL = 38, GANTT_DAYS = 42;
+const HOUR_H = 56, HOUR_H_STD = 56, ZOOM_MIN = 18, ZOOM_MAX = 140, DAY_START = 0, DAY_END = 24, GANTT_COL = 38, GANTT_DAYS = 42;
 const PALETTE = ["#C75D3A","#D9A441","#7E9B6E","#3E8E8A","#5B7DA8","#8E5B7D","#A8552E","#8A8A4A","#E07856","#4A7058","#4F5D9E","#9E4444"];
 const WEEKDAYS = ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
 const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -890,6 +930,8 @@ function Scheduler({user}){
   const [moreOpen,setMoreOpen]=useState(false);
   const [blockEdit,setBlockEdit]=useState(null); // sessione di lavoro aperta
   const wrapRef=useRef(null);
+  const vistaMain=useVistaCal();
+  const calApiMain=useRef(null), calBoxMain=useRef(null);
   // ogni cambio di sezione riparte dall'alto (niente scroll "ereditato" dalla sezione precedente)
   useEffect(()=>{if(wrapRef.current)wrapRef.current.scrollTop=0;},[view]);
 
@@ -1083,8 +1125,11 @@ function Scheduler({user}){
 
       <UpdateWatcher/>
       <main className="gp-wrap" ref={wrapRef}>
-        {(view==="day"||view==="week") &&
-          <div className="gp-panel gp-fill"><DayWeek days={days} view={view} events={calShown} buMap={buMap} onSlot={newEventAt} onEvent={openEvent} onDropItem={dropOnCalendar}/></div>}
+        {(view==="day"||view==="week") && <>
+          <div style={{display:"flex",marginBottom:8}}><ZoomOre hourH={vistaMain.hourH} setHourH={vistaMain.setHourH} onAdatta={()=>calApiMain.current&&calApiMain.current.adatta()}/></div>
+          <div className={`gp-panel gp-fill ${vistaMain.calH?"gp-fissa":""}`} ref={calBoxMain} style={vistaMain.calH?{height:vistaMain.calH}:undefined}><DayWeek days={days} view={view} events={calShown} buMap={buMap} onSlot={newEventAt} onEvent={openEvent} onDropItem={dropOnCalendar}
+            hourH={vistaMain.hourH} setHourH={vistaMain.setHourH} apiRef={calApiMain}/></div>
+          <ManigliaCal boxRef={calBoxMain} setCalH={vistaMain.setCalH}/></>}
         {view==="month" &&
           <div className="gp-panel gp-month gp-fill"><MonthView cursor={cursor} events={calShown} buMap={buMap} onDay={(k)=>newEventAt(k,9)} onEvent={openEvent}/></div>}
         {view==="gantt" &&
@@ -1132,8 +1177,23 @@ function Scheduler({user}){
 }
 
 /* ---- Giorno / Settimana ---- */
-function DayWeek({days,view,events,buMap,onSlot,onEvent,onDropItem}){
+function DayWeek({days,view,events,buMap,onSlot,onEvent,onDropItem,hourH,setHourH,apiRef}){
+  const HOUR_H=hourH||HOUR_H_STD;
   const ref=useRef(null);
+  const hRef=useRef(HOUR_H); hRef.current=HOUR_H;
+  /* zoom delle ore: Ctrl/⌘ + rotellina, o pizzico sul trackpad del Mac. L'ora sotto il mouse resta ferma. */
+  useEffect(()=>{const el=ref.current;if(!el||!setHourH)return;
+    const w=(e)=>{if(!e.ctrlKey&&!e.metaKey)return;e.preventDefault();
+      const r=el.getBoundingClientRect();const y=e.clientY-r.top;const ore=(el.scrollTop+y)/hRef.current;
+      const nh=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,hRef.current*Math.exp(-e.deltaY*0.01)));
+      setHourH(nh);requestAnimationFrame(()=>{el.scrollTop=ore*nh-y;});};
+    el.addEventListener("wheel",w,{passive:false});return ()=>el.removeEventListener("wheel",w);},[setHourH]);
+  /* "Giornata": le ore di lavoro (o quelle degli impegni del giorno, se più ampie) entrano tutte nel riquadro */
+  if(apiRef) apiRef.current={adatta:()=>{const el=ref.current;if(!el||!setHourH)return;
+    let da=7,a=20;days.forEach((d)=>{const ws=startOfDay(d),we=addDays(ws,1);events.forEach((ev)=>{const s=new Date(ev.start),e=new Date(ev.end);if(e>ws&&s<we){da=Math.min(da,Math.floor(Math.max(0,minutesInDay(s,d))/60));a=Math.max(a,Math.ceil(Math.min(1440,minutesInDay(e,d))/60));}});});
+    const head=el.querySelector(".gp-weekhead");const disp=el.clientHeight-(head?head.offsetHeight:0)-6;
+    const nh=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,Math.floor((disp-12)/Math.max(1,a-da))));setHourH(nh);
+    requestAnimationFrame(()=>{el.scrollTop=Math.max(0,da*nh-10);});}};
   const [overDay,setOverDay]=useState(null);
   const slotAt=(e,el)=>{const r=el.getBoundingClientRect();let m=((e.clientY-r.top)/HOUR_H)*60+DAY_START*60;m=Math.max(0,Math.min(23*60+45,Math.round(m/15)*15));return [Math.floor(m/60),m%60];};
   const dragTypes=(e)=>Array.from(e.dataTransfer?.types||[]);
@@ -1266,6 +1326,8 @@ function GanttView({start,events,bus,buFilter,onNew,onEvent,onToggle}){
 /* ---- Sezione Lavoro: calendario + Gantt dedicati ---- */
 function WorkView({events,blocks=[],blocksByTask={},onPlan,onDropItem,agenda=[],bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewWithBu,onManageBu,onPatch}){
   const [sub,setSub]=useState("planner");          // planner | day | week | month | gantt
+  const vista=useVistaCal();
+  const calApi=useRef(null), calBox=useRef(null);
   const [tray,setTrayRaw]=useState(()=>lsGet("gp_tray")!=="0");
   const setTray=(v)=>{setTrayRaw(v);lsSet("gp_tray",v?"1":"0");};
   const [traySheet,setTraySheet]=useState(false);
@@ -1311,7 +1373,7 @@ function WorkView({events,blocks=[],blocksByTask={},onPlan,onDropItem,agenda=[],
   const planHere=(t)=>onPlan&&onPlan(t,toDateKey(sub==="day"?cursor:new Date()));
 
   return (
-    <div className={`gp-work ${sub!=="planner"&&bus.length>0?"gp-fillcol":""}`}>
+    <div className={`gp-work ${sub!=="planner"&&bus.length>0&&!((sub==="day"||sub==="week")&&vista.calH)?"gp-fillcol":""}`}>
       <div className="gp-worktop">
         <div className="gp-worktitle"><span className="gp-workbadge" style={{background:workColor}}><Icon name="list" size={16} style={{color:"#fff"}}/></span>Planner{workBu?` · ${workBu.name}`:""}</div>
         <div className="gp-worktools">
@@ -1332,6 +1394,7 @@ function WorkView({events,blocks=[],blocksByTask={},onPlan,onDropItem,agenda=[],
           {(sub==="day"||sub==="week")&&<button className={`gp-btn ${tray?"solid":"ghost"} sm hide-sm`} onClick={()=>setTray(!tray)}><Icon name="list" size={14}/> Da pianificare</button>}
           {(sub==="day"||sub==="week")&&<button className="gp-icon show-sm" title="Task da pianificare" onClick={()=>setTraySheet(true)}><Icon name="list" size={16}/></button>}
         </div>}
+        {(sub==="day"||sub==="week")&&<ZoomOre hourH={vista.hourH} setHourH={vista.setHourH} onAdatta={()=>calApi.current&&calApi.current.adatta()}/>}
       </div>
       {sub!=="planner" && <div className="gp-worksub">{label}</div>}
 
@@ -1350,10 +1413,12 @@ function WorkView({events,blocks=[],blocksByTask={},onPlan,onDropItem,agenda=[],
         {sub==="month" &&
           <div className="gp-panel gp-month gp-fill"><MonthView cursor={cursor} events={workCal} buMap={buMap} onDay={(k)=>onNewWithBu(k,9,0,newBuId,60)} onEvent={onEvent}/></div>}
         {(sub==="week"||sub==="day") &&
-          <div className="gp-calrow gp-fill">
-            <div className="gp-panel gp-fill"><DayWeek days={sub==="day"?[cursor]:weekDays} view={sub} events={agenda} buMap={buMap} onSlot={(k,h,m)=>onNewWithBu(k,h,m,newBuId,60)} onEvent={onEvent} onDropItem={onDropItem}/></div>
+          <><div className={`gp-calrow gp-fill ${vista.calH?"gp-fissa":""}`} ref={calBox} style={vista.calH?{height:vista.calH}:undefined}>
+            <div className="gp-panel gp-fill"><DayWeek days={sub==="day"?[cursor]:weekDays} view={sub} events={agenda} buMap={buMap} onSlot={(k,h,m)=>onNewWithBu(k,h,m,newBuId,60)} onEvent={onEvent} onDropItem={onDropItem}
+              hourH={vista.hourH} setHourH={vista.setHourH} apiRef={calApi}/></div>
             {tray&&<TaskTray noFilter tasks={trayTasks} bus={bus} buMap={buMap} blocksByTask={blocksByTask} onPlan={planHere} onOpen={onEvent} onClose={()=>setTray(false)}/>}
-          </div>}
+          </div>
+          <ManigliaCal boxRef={calBox} setCalH={vista.setCalH}/></>}
         {traySheet && <div className="gp-sheet-ov" onClick={()=>setTraySheet(false)}>
           <div className="gp-sheet" style={{height:"78vh",display:"flex",flexDirection:"column"}} onClick={(e)=>e.stopPropagation()}>
             <TaskTray sheet noFilter tasks={trayTasks} bus={bus} buMap={buMap} blocksByTask={blocksByTask} onPlan={(t)=>{setTraySheet(false);planHere(t);}} onOpen={(t)=>{setTraySheet(false);onEvent(t);}} onClose={()=>setTraySheet(false)}/>
