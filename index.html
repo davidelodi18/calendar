@@ -95,7 +95,15 @@
 
   /* CALENDARIO GIORNO/SETTIMANA */
   .gp-cal{flex:1;min-height:0;overflow:auto}
-  .gp-weekhead{position:sticky;top:0;z-index:12;display:grid;background:#FFFDF8;border-bottom:1px solid #EADFCB}
+  .gp-calhead{position:sticky;top:0;z-index:12;background:#FFFDF8}
+  .gp-weekhead{display:grid;background:#FFFDF8;border-bottom:1px solid #EADFCB}
+  .gp-allday{display:grid;border-bottom:1px solid #EADFCB;background:#FCF8F0}
+  .gp-allday-lbl{font-size:10px;font-weight:800;color:#A89683;text-transform:uppercase;letter-spacing:.3px;padding:6px 6px 0;text-align:right;border-right:1px solid #EADFCB;line-height:1.2}
+  .gp-allday-col{display:flex;flex-direction:column;gap:3px;padding:4px 3px;border-left:1px solid #F0E7D6;min-width:0}
+  .gp-allday-ev{display:flex;align-items:baseline;gap:8px;border:0;border-radius:6px;padding:3px 7px;cursor:pointer;text-align:left;font-family:inherit;min-width:0}
+  .gp-allday-ev .t{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .gp-allday-ev .d{font-size:10.5px;font-weight:700;color:#7A6A5C;white-space:nowrap}
+  .gp-allday-ev.done{opacity:.55}.gp-allday-ev.done .t{text-decoration:line-through}
   .gp-wh{padding:9px 4px;text-align:center;border-left:1px solid #F0E7D6}
   .gp-wh .wd{display:block;font-size:11px;font-weight:700;color:#8A7A6D;text-transform:uppercase;letter-spacing:.5px}
   .gp-wh .dn{display:inline-grid;place-items:center;width:26px;height:26px;margin-top:3px;font-size:14px;font-weight:800;border-radius:50%}
@@ -114,8 +122,8 @@
   .gp-event:hover{filter:brightness(.97);box-shadow:0 3px 9px rgba(90,74,61,.18);z-index:9}
   .gp-event.done{opacity:.55}
   .gp-event.done .ev-title{text-decoration:line-through}
-  .ev-title{font-size:12.5px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ev-time{font-size:10.5px;font-weight:700;color:#7A6A5C}
+  .ev-title{font-size:12.5px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+  .ev-time{font-size:10.5px;font-weight:700;color:#7A6A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
   .ev-note{font-size:10.5px;color:#8A7A6D;line-height:1.25;overflow:hidden}
 
   /* MESE */
@@ -396,6 +404,14 @@
   .gp-lateitem .dot{width:8px;height:8px;border-radius:50%;flex:none}
   .gp-lateitem .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px;font-weight:600}
   .gp-lateitem .d{font-size:12px;color:#9E4444;white-space:nowrap}
+  .gp-kpi.on{border-color:#C75D3A;box-shadow:0 0 0 2px rgba(199,93,58,.15)}
+  .gp-kpi.todo.clic:hover{border-color:#D9C29A;background:#FBF6EC}
+  .gp-latelist.todo{border-color:#E4D7C2}
+  .gp-latelist.todo .gp-latehead{color:#5A4A3D}
+  .gp-latefascia{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#8A7A6D;padding:8px 8px 2px}
+  .gp-latefascia span{color:#B8A893;margin-left:4px}
+  .gp-lateitem.t-soon .d{color:#B07A1E}
+  .gp-lateitem.t-ok .d{color:#7A6A5C}
 
   /* PLANNER a schede */
   .gp-plsum{display:flex;align-items:center;gap:8px;font-size:13px;color:#8A7A6D;font-weight:600;margin:2px 2px 14px}
@@ -681,7 +697,7 @@ const { useState, useEffect, useRef, useMemo, useCallback } = React;
 /* ================= APP INSTALLABILE + NOTIFICHE PUSH ================= */
 const VAPID_KEY="BBsTB5it-7qRX54uHdjDE__7hoaggX3H4QfPrw0Ene3f4X4p0Lv5ASPrS_1NYb8O9DATS0glIY4nQpEVE7Iy8YM"; // chiave pubblica web push (Firebase → Cloud Messaging)
 /* ---- versione e aggiornamento ---- */
-const APP_VERSION="2.3.1";
+const APP_VERSION="2.3.3";
 async function fetchRemoteVersion(){
   try{const t=await (await fetch("./index.html?nocache="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const APP_VERSION="([^"]+)"/);return m?m[1]:null;}catch(e){return null;}
 }
@@ -732,11 +748,12 @@ const LS_TOKEN="gp-push-token";
 const lsGet=(k)=>{try{return localStorage.getItem(k);}catch(e){return null;}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
 /* vista del calendario regolabile: altezza delle ore (zoom) e altezza del riquadro (maniglia sotto), ricordate su questo dispositivo */
-function useVistaCal(){
-  const [hourH,setH]=useState(()=>{const v=parseFloat(lsGet("gp_hourH"));return v>=18&&v<=140?v:56;});
-  const setHourH=useCallback((v)=>{v=Math.max(18,Math.min(140,v));setH(v);lsSet("gp_hourH",String(Math.round(v)));},[]);
-  const [calH,setC]=useState(()=>{const v=parseInt(lsGet("gp_calH"),10);return v>=260?v:null;});
-  const setCalH=useCallback((v)=>{setC(v);lsSet("gp_calH",v?String(Math.round(v)):"");},[]);
+function useVistaCal(chiave){       // chiave: "cal" (calendario principale) o "pl" (Planner): ognuno ha il suo zoom
+  const kH="gp_hourH_"+chiave, kC="gp_calH_"+chiave;
+  const [hourH,setH]=useState(()=>{const v=parseFloat(lsGet(kH));return v>=18&&v<=140?v:56;});
+  const setHourH=useCallback((v)=>{v=Math.max(18,Math.min(140,v));setH(v);lsSet(kH,String(Math.round(v)));},[]);
+  const [calH,setC]=useState(()=>{const v=parseInt(lsGet(kC),10);return v>=260?v:null;});
+  const setCalH=useCallback((v)=>{setC(v);lsSet(kC,v?String(Math.round(v)):"");},[]);
   return {hourH,setHourH,calH,setCalH};
 }
 function ZoomOre({hourH,setHourH,onAdatta}){
@@ -825,6 +842,8 @@ function minutesInDay(date,ref){const s=new Date(ref);s.setHours(DAY_START,0,0,0
 function combine(k,hhmm){const b=fromDateKey(k);const [h,m]=hhmm.split(":").map(Number);b.setHours(h,m,0,0);return b;}
 function stripHtml(h){return h?h.replace(/<[^>]*>/g," ").replace(/&nbsp;/g," ").replace(/\s+/g," ").trim():"";}
 function daysBetween(a,b){return Math.round((startOfDay(b)-startOfDay(a))/86400000);}
+/* un impegno è "lungo" in un giorno se lo copre tutto o dura almeno 24 ore */
+function eLungo(ev,day){const ws=startOfDay(day),we=addDays(ws,1),s=new Date(ev.start),e=new Date(ev.end);return (s<=ws&&e>=we)||(e-s>=86400000);}
 function layoutDay(evs){
   const s=[...evs].sort((a,b)=>a._s-b._s||a._e-b._e);const lanes=[];
   const p=s.map((ev)=>{let l=lanes.findIndex((e)=>e<=ev._s);if(l===-1){l=lanes.length;lanes.push(ev._e);}else lanes[l]=ev._e;return {...ev,_lane:l};});
@@ -939,7 +958,7 @@ function Scheduler({user}){
   const [moreOpen,setMoreOpen]=useState(false);
   const [blockEdit,setBlockEdit]=useState(null); // sessione di lavoro aperta
   const wrapRef=useRef(null);
-  const vistaMain=useVistaCal();
+  const vistaMain=useVistaCal("cal");
   const calApiMain=useRef(null), calBoxMain=useRef(null);
   // ogni cambio di sezione riparte dall'alto (niente scroll "ereditato" dalla sezione precedente)
   useEffect(()=>{if(wrapRef.current)wrapRef.current.scrollTop=0;},[view]);
@@ -1187,8 +1206,13 @@ function Scheduler({user}){
 
 /* ---- Giorno / Settimana ---- */
 function DayWeek({days,view,events,buMap,onSlot,onEvent,onDropItem,hourH,setHourH,apiRef}){
-  const HOUR_H=hourH||HOUR_H_STD;
   const ref=useRef(null);
+  /* le 24 ore riempiono sempre almeno tutto il riquadro: niente spazio vuoto sotto le 23 */
+  const [disp,setDisp]=useState(0);
+  useEffect(()=>{const el=ref.current;if(!el||typeof ResizeObserver==="undefined")return;
+    const misura=()=>{const hd=el.querySelector(".gp-calhead");setDisp(Math.max(0,el.clientHeight-(hd?hd.offsetHeight:0)-2));};
+    misura();const ro=new ResizeObserver(misura);ro.observe(el);return ()=>ro.disconnect();},[view,days.length]);
+  const HOUR_H=Math.max(hourH||HOUR_H_STD, disp>0?disp/(DAY_END-DAY_START):0);
   const hRef=useRef(HOUR_H); hRef.current=HOUR_H;
   /* zoom delle ore: Ctrl/⌘ + rotellina, o pizzico sul trackpad del Mac. L'ora sotto il mouse resta ferma. */
   useEffect(()=>{const el=ref.current;if(!el||!setHourH)return;
@@ -1199,9 +1223,9 @@ function DayWeek({days,view,events,buMap,onSlot,onEvent,onDropItem,hourH,setHour
     el.addEventListener("wheel",w,{passive:false});return ()=>el.removeEventListener("wheel",w);},[setHourH]);
   /* "Giornata": le ore di lavoro (o quelle degli impegni del giorno, se più ampie) entrano tutte nel riquadro */
   if(apiRef) apiRef.current={adatta:()=>{const el=ref.current;if(!el||!setHourH)return;
-    let da=7,a=20;days.forEach((d)=>{const ws=startOfDay(d),we=addDays(ws,1);events.forEach((ev)=>{const s=new Date(ev.start),e=new Date(ev.end);if(e>ws&&s<we){da=Math.min(da,Math.floor(Math.max(0,minutesInDay(s,d))/60));a=Math.max(a,Math.ceil(Math.min(1440,minutesInDay(e,d))/60));}});});
-    const head=el.querySelector(".gp-weekhead");const disp=el.clientHeight-(head?head.offsetHeight:0)-6;
-    const nh=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,Math.floor((disp-12)/Math.max(1,a-da))));setHourH(nh);
+    let da=7,a=20;days.forEach((d)=>{const ws=startOfDay(d),we=addDays(ws,1);events.forEach((ev)=>{const s=new Date(ev.start),e=new Date(ev.end);if(e>ws&&s<we&&!eLungo(ev,d)){da=Math.min(da,Math.floor(Math.max(0,minutesInDay(s,d))/60));a=Math.max(a,Math.ceil(Math.min(1440,minutesInDay(e,d))/60));}});});
+    const head=el.querySelector(".gp-calhead");const spazio=el.clientHeight-(head?head.offsetHeight:0)-6;
+    const nh=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,Math.floor((spazio-12)/Math.max(1,a-da))));setHourH(nh);
     requestAnimationFrame(()=>{el.scrollTop=Math.max(0,da*nh-10);});}};
   const [overDay,setOverDay]=useState(null);
   const slotAt=(e,el)=>{const r=el.getBoundingClientRect();let m=((e.clientY-r.top)/HOUR_H)*60+DAY_START*60;m=Math.max(0,Math.min(23*60+45,Math.round(m/15)*15));return [Math.floor(m/60),m%60];};
@@ -1213,15 +1237,29 @@ function DayWeek({days,view,events,buMap,onSlot,onEvent,onDropItem,hourH,setHour
   useEffect(()=>{if(ref.current)ref.current.scrollTop=(7-DAY_START)*HOUR_H-20;},[view]);
   const handleClick=(e,day)=>{const r=e.currentTarget.getBoundingClientRect();let m=((e.clientY-r.top)/HOUR_H)*60+DAY_START*60;m=Math.max(0,Math.round(m/15)*15);const h=Math.floor(m/60);if(h>=24)return;onSlot(toDateKey(day),h,m%60);};
   const dayEvents=(day)=>{const ws=new Date(day);ws.setHours(DAY_START,0,0,0);const we=new Date(day);we.setHours(DAY_END,0,0,0);
-    return layoutDay(events.filter((ev)=>new Date(ev.end)>ws&&new Date(ev.start)<we).map((ev)=>({...ev,_s:Math.max(0,minutesInDay(new Date(ev.start),day)),_e:Math.min((DAY_END-DAY_START)*60,minutesInDay(new Date(ev.end),day))})));};
+    return layoutDay(events.filter((ev)=>new Date(ev.end)>ws&&new Date(ev.start)<we&&!eLungo(ev,day)).map((ev)=>({...ev,_s:Math.max(0,minutesInDay(new Date(ev.start),day)),_e:Math.min((DAY_END-DAY_START)*60,minutesInDay(new Date(ev.end),day))})));};
   const mobile=useMedia(MOBILE_Q);
   // su cellulare la settimana entra tutta nello schermo (niente scorrimento laterale)
   const tmpl=`${mobile?40:56}px repeat(${days.length}, minmax(${view==="week"&&!mobile?"110px":"0"}, 1fr))`;
+  /* impegni di più giorni (o che coprono tutta la giornata): stanno nella striscia in alto, non come colonna alta 24 ore */
+  const lunghiDi=(day)=>{const ws=startOfDay(day),we=addDays(ws,1);return events.filter((ev)=>new Date(ev.end)>ws&&new Date(ev.start)<we&&eLungo(ev,day)).sort((a,b)=>new Date(a.start)-new Date(b.start));};
+  const lunghi=days.map(lunghiDi);
+  const conLunghi=lunghi.some((l)=>l.length);
+  const giorniBreve=(ev)=>{const s=new Date(ev.start),e=new Date(ev.end);const f=(d)=>`${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3).toLowerCase()}`;return sameDay(s,e)?`${timeStr(s)}–${timeStr(e)}`:`${f(s)} → ${f(e)}`;};
   return (
     <div className={`gp-cal ${view==="week"?"wk":""}`} ref={ref}>
-      {view==="week" && <div className="gp-weekhead" style={{gridTemplateColumns:tmpl}}><div/>{days.map((d)=>(<div key={toDateKey(d)} className={`gp-wh ${sameDay(d,new Date())?"today":""}`}><span className="wd">{WEEKDAYS[(d.getDay()+6)%7]}</span><span className="dn">{d.getDate()}</span></div>))}</div>}
+      {(view==="week"||conLunghi) && <div className="gp-calhead">
+        {view==="week" && <div className="gp-weekhead" style={{gridTemplateColumns:tmpl}}><div/>{days.map((d)=>(<div key={toDateKey(d)} className={`gp-wh ${sameDay(d,new Date())?"today":""}`}><span className="wd">{WEEKDAYS[(d.getDay()+6)%7]}</span><span className="dn">{d.getDate()}</span></div>))}</div>}
+        {conLunghi && <div className="gp-allday" style={{gridTemplateColumns:tmpl}}>
+          <div className="gp-allday-lbl">più giorni</div>
+          {lunghi.map((l,i)=>(<div key={i} className="gp-allday-col">{l.map((ev)=>(
+            <button key={ev.id} className={`gp-allday-ev ${ev.done?"done":""}`} title={`${ev.title} · ${giorniBreve(ev)}`} style={{background:hexToRgba(ev.color,0.16),borderLeft:`3px solid ${ev.color}`,color:ev.color}} onClick={()=>onEvent(ev)}>
+              <span className="t">{ev.title}</span>{view==="day"&&<span className="d">{giorniBreve(ev)}{ev.buId&&buMap[ev.buId]?" · "+buMap[ev.buId].name:""}</span>}
+            </button>))}</div>))}
+        </div>}
+      </div>}
       <div className="gp-grid" style={{gridTemplateColumns:tmpl}}>
-        <div className="gp-gutter-col">{hours.map((h)=><div key={h} className="gp-hourlabel" style={{height:HOUR_H}}><span>{pad(h)}:00</span></div>)}</div>
+        <div className="gp-gutter-col">{hours.map((h)=><div key={h} className="gp-hourlabel" style={{height:HOUR_H}}>{h>DAY_START&&<span>{pad(h)}:00</span>}</div>)}</div>
         {days.map((day)=>{const evs=dayEvents(day);const now=new Date();const sn=sameDay(day,now);const nt=(minutesInDay(now,day)/60)*HOUR_H;
           return (<div key={toDateKey(day)} className={`gp-daycol ${overDay===toDateKey(day)?"dropover":""}`} style={{height:(DAY_END-DAY_START)*HOUR_H}} onClick={(e)=>handleClick(e,day)}
             onDragOver={(e)=>onOver(e,toDateKey(day))} onDragLeave={(e)=>{if(!e.currentTarget.contains(e.relatedTarget))setOverDay(null);}} onDrop={(e)=>onDrop(e,day)}>
@@ -1335,7 +1373,7 @@ function GanttView({start,events,bus,buFilter,onNew,onEvent,onToggle}){
 /* ---- Sezione Lavoro: calendario + Gantt dedicati ---- */
 function WorkView({events,blocks=[],blocksByTask={},onPlan,onDropItem,agenda=[],bus,buMap,workBuId,setWorkBuId,onEvent,onToggle,onNewWithBu,onManageBu,onPatch}){
   const [sub,setSub]=useState("planner");          // planner | day | week | month | gantt
-  const vista=useVistaCal();
+  const vista=useVistaCal("pl");
   const calApi=useRef(null), calBox=useRef(null);
   const [tray,setTrayRaw]=useState(()=>lsGet("gp_tray")!=="0");
   const setTray=(v)=>{setTrayRaw(v);lsSet("gp_tray",v?"1":"0");};
@@ -1361,7 +1399,14 @@ function WorkView({events,blocks=[],blocksByTask={},onPlan,onDropItem,agenda=[],
   const total=kpiEv.length, done=kpiEv.filter((e)=>stOf(e)==="done").length;
   const lateList=kpiEv.filter((e)=>stOf(e)!=="done"&&startOfDay(new Date(e.end))<today).sort((a,b)=>new Date(a.end)-new Date(b.end));
   const todo=total-done, late=lateList.length;
-  const [vediLate,setVediLate]=useState(false);
+  const todoList=kpiEv.filter((e)=>stOf(e)!=="done").sort((a,b)=>new Date(a.end)-new Date(b.end));
+  const [vediLista,setVediLista]=useState(null);     // null | "todo" | "late"
+  const apri=(k,n)=>{if(n)setVediLista(vediLista===k?null:k);};
+  /* breakdown del "da fare": per scadenza */
+  const fasce=(()=>{if(vediLista!=="todo")return [];
+    const g=[["In ritardo",[]],["Oggi",[]],["Prossimi 7 giorni",[]],["Più avanti",[]]];
+    todoList.forEach((e)=>{const dl=dueInfo(e.end).delta;g[dl<0?0:dl===0?1:dl<=7?2:3][1].push(e);});
+    return g.filter((x)=>x[1].length);})();
 
   const weekDays=useMemo(()=>{const s=startOfWeek(cursor);return Array.from({length:7},(_,i)=>addDays(s,i));},[cursor]);
   const shift=(n)=>{
@@ -1415,16 +1460,19 @@ function WorkView({events,blocks=[],blocksByTask={},onPlan,onDropItem,agenda=[],
       <div className="gp-gantt-kpis">
         <div className="gp-kpi"><div className="klabel">Totali</div><div className="kval">{total}</div></div>
         <div className="gp-kpi done"><div className="klabel">Completati</div><div className="kval">{done}</div></div>
-        <div className="gp-kpi"><div className="klabel">Da fare</div><div className="kval">{todo}</div></div>
-        <div className={`gp-kpi late ${late?"clic":""}`} onClick={()=>late&&setVediLate(!vediLate)} title={late?"Vedi quali sono":""}><div className="klabel">In ritardo</div><div className="kval">{late}</div></div>
+        <div className={`gp-kpi ${todo?"clic todo":""} ${vediLista==="todo"?"on":""}`} onClick={()=>apri("todo",todo)} title={todo?"Vedi cosa c'è da fare, per scadenza":""}><div className="klabel">Da fare</div><div className="kval">{todo}</div></div>
+        <div className={`gp-kpi late ${late?"clic":""} ${vediLista==="late"?"on":""}`} onClick={()=>apri("late",late)} title={late?"Vedi quali sono":""}><div className="klabel">In ritardo</div><div className="kval">{late}</div></div>
       </div>
-      {vediLate&&late>0&&<div className="gp-latelist">
-        <div className="gp-latehead"><b>In ritardo</b><button className="gp-icon" onClick={()=>setVediLate(false)}><Icon name="x" size={14}/></button></div>
-        {lateList.map((e)=>{const di=dueInfo(e.end);return (
-          <button key={e.id} className="gp-lateitem" onClick={()=>onEvent(e)}>
-            <span className="dot" style={{background:e.color||workColor}}/><span className="t">{e.title}</span>
-            <span className="d">{di.date} · {di.phrase}{e.buId&&buMap[e.buId]&&effSel==="all"?" · "+buMap[e.buId].name:""}</span>
-          </button>);})}
+      {vediLista&&<div className={`gp-latelist ${vediLista==="todo"?"todo":""}`}>
+        <div className="gp-latehead"><b>{vediLista==="late"?`In ritardo (${late})`:`Da fare (${todo})`}</b><button className="gp-icon" onClick={()=>setVediLista(null)}><Icon name="x" size={14}/></button></div>
+        {(vediLista==="late"?[["",lateList]]:fasce).map(([nome,lista])=>(<React.Fragment key={nome||"x"}>
+          {nome&&<div className="gp-latefascia">{nome} <span>{lista.length}</span></div>}
+          {lista.map((e)=>{const di=dueInfo(e.end);return (
+            <button key={e.id} className={`gp-lateitem t-${di.tone}`} onClick={()=>onEvent(e)}>
+              <span className="dot" style={{background:e.color||workColor}}/><span className="t">{e.title}</span>
+              <span className="d">{di.date} · {di.phrase}{e.buId&&buMap[e.buId]&&effSel==="all"?" · "+buMap[e.buId].name:""}</span>
+            </button>);})}
+        </React.Fragment>))}
       </div>}
 
       {bus.length===0 ? (
